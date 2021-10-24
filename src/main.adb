@@ -1,28 +1,20 @@
-
-with MicroBit.IOs;
-with MicroBit.I2C;
-with MicroBit.Time;
-with OV2640;
-
+With HCSR04;
+with MicroBit.Console;
+with Ada.Real_Time; use Ada.Real_Time;
 
 procedure Main is
-   cam : OV2640.OV2640_Camera(MicroBit.I2C.Controller);
+   hc : HCSR04.HCSR04;
+   distance : Float;
+   last : Time := Clock;
+   Cycle : constant Time_Span := Milliseconds (1000);
 begin
-
-   --TODO Inizialize I2C first
-   OV2640.Initialize(cam, 16#26#);
-   OV2640.Set_Frame_Size(cam,OV2640.CIF);
-   OV2640.Set_Pixel_Format(cam,OV2640.Pix_RGB565);
-   OV2640.Set_Frame_Rate(cam,OV2640.FR_60FPS);
-
-
-   loop
-
-      MicroBit.IOs.Set(12,True);
-      MicroBit.Time.Delay_Ms(500);
-      MicroBit.IOs.Set(12,False);
-      MicroBit.Time.Delay_Ms(500);
+   hc.trig := 1;
+   hc.echo := 2;
+   while(True) loop
+      distance := HCSR04.measure(hc);
+      MicroBit.Console.Put_Line(distance'Image);
+      last := Clock;
+      delay until last + Cycle;
 
    end loop;
-
 end Main;

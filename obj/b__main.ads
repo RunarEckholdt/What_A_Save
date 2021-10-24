@@ -1,6 +1,5 @@
 pragma Warnings (Off);
 pragma Ada_95;
-pragma Restrictions (No_Exception_Propagation);
 with System;
 with System.Parameters;
 with System.Secondary_Stack;
@@ -20,6 +19,9 @@ package ada_main is
    procedure adainit;
    pragma Export (C, adainit, "adainit");
 
+   procedure adafinal;
+   pragma Export (C, adafinal, "adafinal");
+
    procedure main;
    pragma Export (C, main, "main");
 
@@ -27,22 +29,170 @@ package ada_main is
    --  ada%s
    --  interfaces%s
    --  system%s
-   --  ada.exceptions%s
-   --  ada.exceptions%b
-   --  ada.assertions%s
-   --  ada.assertions%b
+   --  ada.io_exceptions%s
+   --  ada.strings%s
+   --  gnat%s
+   --  interfaces.nrf52%s
+   --  interfaces.nrf52.clock%s
+   --  interfaces.nrf52.uart%s
+   --  system.bb%s
+   --  system.bb.board_parameters%s
+   --  system.bb.cpu_specific%s
+   --  system.bb.mcu_parameters%s
+   --  system.bb.parameters%s
+   --  system.exceptions%s
+   --  system.float_control%s
+   --  system.float_control%b
+   --  system.img_int%s
    --  system.machine_code%s
    --  system.parameters%s
    --  system.parameters%b
+   --  system.powten_flt%s
    --  system.storage_elements%s
    --  system.storage_elements%b
    --  system.secondary_stack%s
    --  system.secondary_stack%b
-   --  ada.tags%s
-   --  ada.tags%b
+   --  gnat.debug_utilities%s
+   --  gnat.debug_utilities%b
+   --  system.case_util%s
+   --  system.case_util%b
+   --  system.string_hash%s
+   --  system.string_hash%b
+   --  system.htable%s
+   --  system.htable%b
+   --  system.task_info%s
+   --  system.task_info%b
+   --  system.text_io%s
+   --  system.text_io%b
+   --  system.io%s
+   --  system.io%b
+   --  system.traceback_entries%s
+   --  system.traceback_entries%b
    --  system.unsigned_types%s
+   --  interfaces.nrf52.rtc%s
+   --  system.img_uns%s
+   --  system.img_util%s
+   --  system.img_util%b
+   --  system.wch_con%s
+   --  system.wch_con%b
+   --  system.wch_jis%s
+   --  system.wch_jis%b
+   --  system.wch_cnv%s
+   --  system.wch_cnv%b
+   --  system.address_image%s
+   --  system.address_image%b
+   --  system.traceback%s
+   --  system.traceback%b
+   --  ada.strings.utf_encoding%s
+   --  ada.strings.utf_encoding.wide_strings%s
+   --  ada.strings.utf_encoding.wide_strings%b
+   --  ada.strings.utf_encoding.wide_wide_strings%s
+   --  ada.strings.utf_encoding.wide_wide_strings%b
+   --  ada.tags%s
+   --  ada.strings.text_buffers%s
+   --  ada.strings.text_buffers%b
+   --  ada.strings.text_buffers.utils%s
+   --  ada.strings.text_buffers.utils%b
+   --  system.bb.cpu_primitives%s
+   --  system.bb.cpu_primitives.context_switch_trigger%s
+   --  system.bb.cpu_primitives.context_switch_trigger%b
+   --  system.bb.interrupts%s
+   --  system.bb.protection%s
+   --  system.multiprocessors%s
+   --  system.bb.time%s
+   --  system.bb.board_support%s
+   --  system.bb.board_support%b
+   --  system.bb.threads%s
+   --  system.bb.threads.queues%s
+   --  system.bb.threads.queues%b
+   --  system.multiprocessors.spin_locks%s
+   --  system.multiprocessors.spin_locks%b
+   --  system.multiprocessors.fair_locks%s
+   --  system.os_interface%s
+   --  system.put_images%s
+   --  system.put_images%b
+   --  system.bb.timing_events%s
+   --  system.bb.timing_events%b
+   --  system.standard_library%s
+   --  ada.exceptions%s
+   --  system.exceptions.machine%s
+   --  system.exceptions.machine%b
+   --  system.exceptions_debug%s
+   --  system.exceptions_debug%b
+   --  system.soft_links%s
+   --  system.task_primitives%s
+   --  system.tasking%s
+   --  system.task_primitives.operations%s
+   --  system.tasking.debug%s
+   --  system.tasking.debug%b
+   --  system.val_util%s
+   --  system.val_util%b
+   --  system.val_uns%s
+   --  system.wch_stw%s
+   --  system.wch_stw%b
+   --  ada.exceptions.last_chance_handler%s
+   --  ada.exceptions.last_chance_handler%b
+   --  ada.exceptions.traceback%s
+   --  ada.exceptions.traceback%b
+   --  ada.strings.utf_encoding%b
+   --  ada.tags%b
+   --  system.bb.cpu_primitives%b
+   --  system.bb.interrupts%b
+   --  system.bb.protection%b
+   --  system.bb.threads%b
+   --  system.bb.time%b
+   --  system.exception_table%s
+   --  system.exception_table%b
+   --  system.memory%s
+   --  system.memory%b
+   --  system.multiprocessors%b
+   --  system.multiprocessors.fair_locks%b
+   --  system.soft_links%b
+   --  system.standard_library%b
+   --  system.task_primitives.operations%b
+   --  system.tasking%b
+   --  system.traceback.symbolic%s
+   --  system.traceback.symbolic%b
+   --  ada.exceptions%b
+   --  ada.assertions%s
+   --  ada.assertions%b
+   --  ada.streams%s
+   --  ada.streams%b
+   --  system.fat_flt%s
+   --  system.fat_lflt%s
+   --  system.fat_llf%s
+   --  system.finalization_root%s
+   --  system.finalization_root%b
+   --  ada.finalization%s
+   --  system.img_flt%s
+   --  system.storage_pools%s
+   --  system.storage_pools%b
+   --  system.finalization_masters%s
+   --  system.finalization_masters%b
+   --  system.stream_attributes%s
+   --  system.stream_attributes.xdr%s
+   --  system.stream_attributes.xdr%b
+   --  system.stream_attributes%b
+   --  ada.real_time%s
+   --  ada.real_time%b
+   --  ada.real_time.delays%s
+   --  ada.real_time.delays%b
    --  system.assertions%s
    --  system.assertions%b
+   --  system.pool_global%s
+   --  system.pool_global%b
+   --  system.tasking.protected_objects%s
+   --  system.tasking.protected_objects%b
+   --  system.tasking.restricted%s
+   --  system.tasking.restricted.stages%s
+   --  system.tasking.restricted.stages%b
+   --  ada.task_identification%s
+   --  ada.task_identification%b
+   --  system.interrupts%s
+   --  system.interrupts%b
+   --  ada.interrupts%s
+   --  ada.interrupts%b
+   --  ada.interrupts.names%s
    --  cortex_m%s
    --  cortex_m_svd%s
    --  hal%s
@@ -68,12 +218,9 @@ package ada_main is
    --  nrf_svd.twi%s
    --  nrf_svd.uart%s
    --  nrf_svd.wdt%s
-   --  bit_fields%s
-   --  bit_fields%b
    --  hal.gpio%s
    --  hal.i2c%s
    --  hal.spi%s
-   --  hal.time%s
    --  hal.uart%s
    --  memory_barriers%s
    --  memory_barriers%b
@@ -96,8 +243,6 @@ package ada_main is
    --  nrf.tasks%b
    --  nrf.adc%s
    --  nrf.adc%b
-   --  nrf.clock%s
-   --  nrf.clock%b
    --  nrf.ppi%s
    --  nrf.ppi%b
    --  nrf.timers%s
@@ -109,14 +254,12 @@ package ada_main is
    --  nrf.device%s
    --  nrf.device%b
    --  microbit%s
-   --  microbit.i2c%s
-   --  microbit.i2c%b
-   --  microbit.ios%s
-   --  microbit.ios%b
-   --  microbit.time%s
-   --  microbit.time%b
-   --  ov2640%s
-   --  ov2640%b
+   --  microbit.console%s
+   --  microbit.console%b
+   --  microbit.iosfortasking%s
+   --  microbit.iosfortasking%b
+   --  hcsr04%s
+   --  hcsr04%b
    --  main%b
    --  END ELABORATION ORDER
 
