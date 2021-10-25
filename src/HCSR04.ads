@@ -3,6 +3,7 @@ with ADA.Interrupts;
 with nRF.GPIO;
 with MicroBit;
 with MicroBit.IOsForTasking; use MicroBit.IOsForTasking;
+with MicroBit.Console;
 
 --https://create.arduino.cc/projecthub/abdularbi17/ultrasonic-sensor-hc-sr04-with-arduino-tutorial-327ff6
 
@@ -17,9 +18,10 @@ package HCSR04 is
    type HCSR04 is record
       echo, trig : Pin;
    end record;
-   function measure(hc : HCSR04) return Float;
+
+   procedure measure(hc : in HCSR04; distance : out Float; result : out Boolean);
    procedure trig(hc : in HCSR04);
-   function pulseIn(hc : HCSR04) return Time_Span;
+   procedure pulseIn(hc : in HCSR04; pulseTime : out Time_Span; result : out Boolean);
 
 
 
