@@ -2,6 +2,7 @@
 *.o
 ZFP/
 obj/
+src/main.adb
 
 # Ada Library Information
 *.ali
