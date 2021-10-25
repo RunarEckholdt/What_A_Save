@@ -10,7 +10,7 @@ package L298N_MDM is
 
    
    subtype Pin_D is MicroBit.IOsForTasking.Pin_Id
-     with Predicate => Supports(Pin, Digital);
+     with Predicate => Supports(Pin_D, Digital);
    
    type dirId is (left, right, stop);
            
