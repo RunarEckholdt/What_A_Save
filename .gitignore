@@ -3,6 +3,8 @@
 ZFP/
 obj/
 src/main.adb
+src/testmain.adb
+.#main.adb#
 
 # Ada Library Information
 *.ali
