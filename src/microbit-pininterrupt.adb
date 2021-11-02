@@ -20,12 +20,13 @@ package body Microbit.PinInterrupt is
          if(nRF.Events.Triggered(evtType)) then
             nRF.Events.Clear(evtType);
             released := True;
+            Wait
          end if;
 
       end PinInterruptHandler;
 
-      procedure AttachToPinToChannel(pin : in nRF.GPIO.GPIO_Pin_Index;
-                                     channel : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel;
+      procedure AttachPinToChannel(  pin      : in nRF.GPIO.GPIO_Pin_Index;
+                                     channel  : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel;
                                      polarity : in nRF.GPIO.Tasks_And_Events.Event_Polarity) is
       begin
          nRF.GPIO.Tasks_And_Events.Enable_Event(channel, pin, polarity);
@@ -43,7 +44,7 @@ package body Microbit.PinInterrupt is
          end case;
          nRF.Events.Enable_Interrupt(evtType);
 
-      end AttachToPinToChannel;
+      end AttachPinToChannel;
 
 
 
