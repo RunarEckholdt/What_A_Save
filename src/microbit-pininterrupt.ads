@@ -4,6 +4,7 @@ with nRF.GPIO;
 with Ada.Interrupts.Names;
 with System;
 with nRF.Events;
+with MicroBit.Console;
 
 package Microbit.PinInterrupt is
 
@@ -25,6 +26,7 @@ package Microbit.PinInterrupt is
       pragma Interrupt_Priority (System.Interrupt_Priority'First);
    private
       released : Boolean := False;
+      evtType : nRF.Event_Type;
 
 
    end PinInterrupt;
