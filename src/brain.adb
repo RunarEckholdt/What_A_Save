@@ -60,13 +60,17 @@ package body brain is
    
    
    -- set think --
-   task body Think is
+   task body Think is --worst computation time: 0.000030518
       bd : key_info;
       -- scheduling management --
       last     : Time := Clock;
       T_period : constant Time_Span := Milliseconds (8);
+      
+      
+      
    begin
       loop
+         
          brain_sync.get_brain_data(bd); -- fetch data --
          bd.distance_dif := abs(bd.distance_left - bd.distance_right);
          if (bd.distance_dif < 0.15) then
@@ -84,20 +88,35 @@ package body brain is
    
    
    -- move the keeper --
-   task body Move is
+   task body Move is             --worst computation time: 0.000030518
       wheels : L298N_MDM.L298N;
       bd : key_info;   
       -- scheduling management --
       last     : Time := Clock;
       T_period : constant Time_Span := Milliseconds (8);
       
+      -- testing variables --
+      comp_test_pre, comp_test_post    : Time := Clock;
+      comp_span :  Time_Span;
+      comp_sleep : constant  Time_Span := Milliseconds(100);
+      
    begin
       wheels.IN_1 := 7;  
       wheels.IN_2 := 6;  
       
       loop
+         comp_test_pre := clock; --for testing computation time
+         
          brain_sync.get_brain_data(bd); -- fetch data --
-         L298N_MDM.move(wheels, bd.next_direction);    
+         L298N_MDM.move(wheels, bd.next_direction);   
+         ------------------
+         
+         comp_test_post := clock; --for testing computation time
+         comp_span := comp_test_post - comp_test_pre;
+         MicroBit.Console.Put_Line(To_Duration(comp_span)'Image);
+         delay until comp_test_post + comp_sleep;
+         ------------------ 
+         
          last := Clock;
          delay until last + T_period;
       end loop;
