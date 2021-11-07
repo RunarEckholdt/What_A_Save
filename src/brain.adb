@@ -1,3 +1,5 @@
+
+
 package body brain is
    
    protected body brain_sync is 
@@ -60,11 +62,14 @@ package body brain is
    -- set think --
    task body Think is
       bd : key_info;
+      -- scheduling management --
+      last     : Time := Clock;
+      T_period : constant Time_Span := Milliseconds (8);
    begin
       loop
          brain_sync.get_brain_data(bd); -- fetch data --
          bd.distance_dif := abs(bd.distance_left - bd.distance_right);
-         if (bd.distance_dif < 0.05) then
+         if (bd.distance_dif < 0.15) then
             bd.next_direction := L298N_MDM.stop;
          elsif (bd.distance_left < bd.distance_right) then
             bd.next_direction := L298N_MDM.left;
@@ -72,6 +77,8 @@ package body brain is
             bd.next_direction := L298N_MDM.right;
          end if;
          brain_sync.set_brain_data(bd);
+         last := Clock;
+         delay until last + T_period;
       end loop;
    end think;
    
@@ -81,8 +88,8 @@ package body brain is
       wheels : L298N_MDM.L298N;
       bd : key_info;   
       -- scheduling management --
-      --last     : Time := Clock;
-      --T_period : constant Time_Span := Milliseconds (8);
+      last     : Time := Clock;
+      T_period : constant Time_Span := Milliseconds (8);
       
    begin
       wheels.IN_1 := 7;  
@@ -91,6 +98,8 @@ package body brain is
       loop
          brain_sync.get_brain_data(bd); -- fetch data --
          L298N_MDM.move(wheels, bd.next_direction);    
+         last := Clock;
+         delay until last + T_period;
       end loop;
    end Move;
 
