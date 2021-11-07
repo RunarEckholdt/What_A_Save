@@ -2,36 +2,28 @@ with nRF.GPIO.Tasks_And_Events;
 with nRF.Interrupts;
 with nRF.GPIO;
 with Ada.Interrupts.Names;
-with System;
 with nRF.Events;
-with MicroBit.Console;
 
 package Microbit.PinInterrupt is
 
+   eventChannel0 : nRF.Event_Type renames nRF.Events.GPIOTE_IN_0;
+   eventChannel1 : nRF.Event_Type renames nRF.Events.GPIOTE_IN_1;
+   eventChannel2 : nRF.Event_Type renames nRF.Events.GPIOTE_IN_2;
+   eventChannel3 : nRF.Event_Type renames nRF.Events.GPIOTE_IN_3;
 
 
 
-   protected PinInterrupt is
-
-      --Can be called by a task, will sleep until it is released by the interrupthandler.
-      entry Wait;
-
-      procedure PinInterruptHandler;
-
-      --Used to attach a pin to an interrupt event on specified GPIOTE channel
-      procedure AttachPinToChannel(  pin      : in nRF.GPIO.GPIO_Pin_Index;
-                                     channel  : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel; -- 0..3
-                                     polarity : in nRF.GPIO.Tasks_And_Events.Event_Polarity);
+   --Attaches a pin to an GPIOTE channel and enables the event and interrupt
+   procedure AttachToPinToChannel(pin : in nRF.GPIO.GPIO_Pin_Index;
+                                  channel : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel;
+                                  polarity : in nRF.GPIO.Tasks_And_Events.Event_Polarity;
+                                  evtType : out nRF.Event_Type );
 
 
 
-      pragma Attach_Handler(PinInterruptHandler, Ada.Interrupts.Names.GPIOTE_Interrupt);
-      pragma Interrupt_Priority (System.Interrupt_Priority'First);
-   private
-      released : Boolean := False;
-      evtType : nRF.Event_Type;
 
 
-   end PinInterrupt;
+
+
 
 end Microbit.PinInterrupt;
