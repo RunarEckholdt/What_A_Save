@@ -2,45 +2,23 @@
 package body Microbit.PinInterrupt is
 
 
-   protected body PinInterrupt is
-
-
-      entry Wait when released is
-      begin
-         released := False;
-      end Wait;
 
 
 
-      procedure PinInterruptHandler is
+      procedure AttachToPinToChannel(pin : in nRF.GPIO.GPIO_Pin_Index;
+                                     channel : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel;
+                                     polarity : in nRF.GPIO.Tasks_And_Events.Event_Polarity;
+                                     evtType : out nRF.Event_Type ) is
 
-      begin
-
-
-         if(nRF.Events.Triggered(evtType)) then
-            nRF.Events.Clear(evtType);
-            released := True;
-            Wait
-         end if;
-
-      end PinInterruptHandler;
-
-      procedure AttachPinToChannel(  pin      : in nRF.GPIO.GPIO_Pin_Index;
-                                     channel  : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel;
-                                     polarity : in nRF.GPIO.Tasks_And_Events.Event_Polarity) is
       begin
          nRF.GPIO.Tasks_And_Events.Enable_Event(channel, pin, polarity);
          nRF.Interrupts.Enable(nRF.Interrupts.GPIOTE_Interrupt);
 
          case channel is
-            when 0 =>
-               evtType := nRF.Events.GPIOTE_IN_0;
-            when 1 =>
-               evtType := nRF.Events.GPIOTE_IN_1;
-            when 2 =>
-               evtType := nRF.Events.GPIOTE_IN_2;
-            when 3 =>
-               evtType := nRF.Events.GPIOTE_IN_3;
+            when 0 => evtType := eventChannel0;
+            when 1 => evtType := eventChannel1;
+            when 2 => evtType := eventChannel2;
+            when 3 => evtType := eventChannel3;
          end case;
          nRF.Events.Enable_Interrupt(evtType);
 
@@ -48,5 +26,4 @@ package body Microbit.PinInterrupt is
 
 
 
-   end PinInterrupt;
 end Microbit.PinInterrupt;
