@@ -1,16 +1,24 @@
 with ADA.Real_Time; use ADA.Real_Time;
-with ADA.Interrupts;
 with nRF.GPIO;
 with MicroBit;
 with MicroBit.IOsForTasking; use MicroBit.IOsForTasking;
 with MicroBit.Console;
+with MicroBit.PinInterrupt;
+with Ada.Interrupts.Names;
 
 --https://create.arduino.cc/projecthub/abdularbi17/ultrasonic-sensor-hc-sr04-with-arduino-tutorial-327ff6
 
 
 package HCSR04 is
-   --type PulseTime is digits 8 range 0.0 .. 25000.0;
-   --subtype PulseTime is Time ;
+
+   protected EchoHandlerInterface is
+      entry Wait;
+      procedure EchoHandler;
+      pragma Attach_Handler(EchoHandler,Ada.Interrupts.Names.GPIOTE_Interrupt);
+   private
+      released : Boolean := False;
+   end EchoHandlerInterface;
+
 
    subtype Pin is MicroBit.IOsForTasking.Pin_Id
    		with Predicate => Supports(Pin, Analog);

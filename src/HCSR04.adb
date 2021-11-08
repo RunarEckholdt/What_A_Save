@@ -2,6 +2,20 @@
 
 package body HCSR04 is
 
+   protected body EchoHandlerInterface is
+
+      entry Wait when released is
+      begin
+          released := False;
+      end Wait;
+
+      procedure EchoHandler is
+      begin
+         released := True;
+      end EchoHandler;
+  end EchoHandlerInterface;
+
+
    --Measures the distance in meters
    procedure measure(hc : in HCSR04 ; distance : out Float; result : out Boolean) is
       timeS : Time_Span;
@@ -35,39 +49,18 @@ package body HCSR04 is
    procedure pulseIn(hc : in HCSR04; pulseTime : out Time_Span; result : out Boolean) is
       startT : Time;
       endT : Time;
-      --afterTrig : Time;
-      --sendPulseTime : Time_Span;
-      --timeOutSend : constant Time_Span := Milliseconds(10);
-      --timeOutPulse : constant Time_Span := Milliseconds(50);
 
    begin
-      --afterTrig := Clock;
       while(MicroBit.IOsForTasking.Set(hc.echo) = False) loop
-         --asm(wfi ) --TODO change to wait for interupt
-         --  if((Clock - afterTrig) > timeOutSend) then
-         --     MicroBit.Console.Put_Line("HCSR04 did not trigger");
-         --     result := False;
-         --     return;
-         --  end if;
-         null;
+         EchoHandlerInterface.Wait;
       end loop;
-      --sendPulseTime := Clock - afterTrig;
-      --MicroBit.Console.Put_Line("Send Timing: " & To_Duration(sendPulseTime)'Image & "s"); --Logs time for the send pulses.
       startT := Clock;
 
       while(MicroBit.IOsForTasking.Set(hc.echo) = True) loop
-         --asm(wfi ) --TODO change to wait for interupt
-         --  if((Clock - startT) > timeOutPulse) then
-         --     MicroBit.Console.Put_Line("HCSR04 timed out");
-         --     result := False;
-         --     return;
-
-         --end if;
-         null;
+         EchoHandlerInterface.Wait;
       end loop;
       endT := Clock;
       pulseTime := endT - startT;
-      --MicroBit.Console.Put_Line(pulseTime'Image);
       result := True;
    end pulseIn;
 

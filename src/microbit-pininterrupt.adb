@@ -2,7 +2,7 @@
 package body Microbit.PinInterrupt is
 
 
-      procedure AttachToPinToChannel(pin : in nRF.GPIO.GPIO_Pin_Index;
+      procedure AttachPinToChannel(pin : in nRF.GPIO.GPIO_Pin_Index;
                                      channel : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel;
                                      polarity : in nRF.GPIO.Tasks_And_Events.Event_Polarity;
                                      evtType : out nRF.Event_Type ) is
