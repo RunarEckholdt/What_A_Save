@@ -10,6 +10,9 @@ with Microbit.PinInterrupt; --our interrupt package
 With HCSR04;                --our ultra-sonic package
 with L298N_MDM;             --our motor controller package
 
+-- haha --
+with MicroBit.Music; use MicroBit.Music;
+
 package brain is
    -- Shared data --
    type key_info is record

@@ -44,23 +44,29 @@ package body brain is
       right_eye.echo := 4;  --shared echo pin
       
       loop
+         last := Clock;
+         
          case next_eye is        
          when left =>
+            --last := Clock;
             HCSR04.measure(left_eye, dis_left, result);
             bd.distance_left := integer(float'rounding(dis_left*100.0));
             brain_sync.set_brain_data(bd);
             next_eye := right;
-            last := Clock;
-            delay until last + T_period;
+            --last := Clock;
+            
             
          when right =>
+            --last := Clock;
             HCSR04.measure(right_eye, dis_right, result);
             bd.distance_right := integer(float'rounding(dis_right*100.0)); 
             brain_sync.set_brain_data(bd);
             next_eye := left;   
-            last := Clock;
-            delay until last + T_period;
+            --last := Clock;
+            --delay until last + T_period;
          end case;  
+         
+         delay until last + T_period;
       end loop;
    end Look;
    
@@ -73,7 +79,8 @@ package body brain is
       T_period : constant Time_Span := Milliseconds (4); --orginal 8
            
    begin
-      loop         
+      loop  
+         last := Clock;
          brain_sync.get_brain_data(bd); -- fetch data --         
                   
          if bd.distance_left > bd.distance_right then         
@@ -88,7 +95,7 @@ package body brain is
          end if;
 
          brain_sync.set_brain_data(bd);
-         last := Clock;
+         --last := Clock;
          delay until last + T_period;
       end loop;
    end think;
@@ -101,6 +108,9 @@ package body brain is
       -- scheduling management --
       last     : Time := Clock;
       T_period : constant Time_Span := Milliseconds (8); --orginal 8
+
+      -- haha --
+      
       
    begin 
       
@@ -109,16 +119,20 @@ package body brain is
       wheels.SPD_1 := 0; --analog pwm
       MicroBit.IOsForTasking.Set_Analog_Period_Us(16); --16 works best
       
-      loop         
+      loop      
+         last := Clock;
+         
          brain_sync.get_brain_data(bd); -- fetch data --
          
          if (bd.min_dist < 70 and bd.min_dist > 3 and bd.distance_dif > 3) then
             L298N_MDM.move(wheels, bd.next_direction, L298N_MDM.speedControl(500));
+           -- MicroBit.Music.Play (27, MicroBit.Music.Pitch(bd.min_dist*60));
          else
             L298N_MDM.move(wheels, L298N_MDM.stop, L298N_MDM.speedControl(1));  
+           -- MicroBit.Music.Play (27, rest);
          end if;
  
-         last := Clock;
+         --last := Clock;
          delay until last + T_period;
       end loop;
    end Move;
