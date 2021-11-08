@@ -13,18 +13,18 @@ package body brain is
       begin
          brain_data := bd;
       end set_brain_data;
-
-      
    end brain_sync;
    
    -- look for target --
    task body Look is  -- 0.007 worst?
       -- task components --
+      -- left eye --
       left_eye  : HCSR04.HCSR04;
-      dis_left : float;
-      
+      dis_left : float;  
+      -- right eye --
       right_eye : HCSR04.HCSR04;
       dis_right : float;
+      --
       
       -- other --
       result  : boolean;
@@ -35,10 +35,6 @@ package body brain is
       T_period : constant Time_Span := Milliseconds (16); --orginal 16
       next_eye : eye := Left;
       
-
-     
-      
-
    begin
       -- port mapping --
       right_eye.trig := 2; 
@@ -48,8 +44,7 @@ package body brain is
       right_eye.echo := 4;  --shared echo pin
       
       loop
-         --comp_test_pre := clock; --for testing computation time
-         case next_eye is
+         case next_eye is        
          when left =>
             HCSR04.measure(left_eye, dis_left, result);
             bd.distance_left := integer(float'rounding(dis_left*100.0));
@@ -80,8 +75,7 @@ package body brain is
    begin
       loop         
          brain_sync.get_brain_data(bd); -- fetch data --         
-        
-                
+                  
          if bd.distance_left > bd.distance_right then         
             bd.min_dist := bd.distance_right;                
             bd.distance_dif := bd.distance_left - bd.distance_right;            
@@ -117,7 +111,8 @@ package body brain is
       
       loop         
          brain_sync.get_brain_data(bd); -- fetch data --
-         if (bd.min_dist < 70 and bd.min_dist > 3 and bd.distance_dif > 1) then
+         
+         if (bd.min_dist < 70 and bd.min_dist > 3 and bd.distance_dif > 3) then
             L298N_MDM.move(wheels, bd.next_direction, L298N_MDM.speedControl(500));
          else
             L298N_MDM.move(wheels, L298N_MDM.stop, L298N_MDM.speedControl(1));  
