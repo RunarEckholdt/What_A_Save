@@ -15,10 +15,10 @@ package brain is
    type key_info is record
       distance_left, distance_right, distance_dif : integer;
       next_direction : L298N_MDM.dirId;
-      next_speed     : L298N_MDM.speedControl;
-      
+      next_speed     : L298N_MDM.speedControl;     
    end record;
-   
+   type viewRange is new Integer range 0 .. 63;
+     
    protected brain_sync is 
       procedure set_brain_data(bd : in key_info);
       procedure get_brain_data(bd : out key_info);
@@ -30,7 +30,7 @@ package brain is
    type eye is (left, right);
    
    -- task set --
-   task Move with Priority => 1;
+   task Move with Priority => 3;
    task Think with Priority => 2;
-   task Look with Priority => 3;
+   task Look with Priority => 1;
 end brain;
