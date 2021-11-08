@@ -13,9 +13,10 @@ with L298N_MDM;             --our motor controller package
 package brain is
    -- Shared data --
    type key_info is record
-      distance_left, distance_right, distance_dif : Float;
+      distance_left, distance_right, distance_dif : integer;
       next_direction : L298N_MDM.dirId;
-      next_speed     : float;
+      next_speed     : L298N_MDM.speedControl;
+      
    end record;
    
    protected brain_sync is 
