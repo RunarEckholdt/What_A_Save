@@ -15,6 +15,7 @@ package L298N_MDM is
      with Predicate => Supports(Pin_A, Analog);
    
    subtype speedControl is MicroBit.IOsForTasking.Analog_Value range 0..1023;
+   
      
    type dirId is (left, right, stop);
            
