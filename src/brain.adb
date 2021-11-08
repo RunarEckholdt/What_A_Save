@@ -21,8 +21,12 @@ package body brain is
    task body Look is  -- 0.007 worst?
       -- task components --
       left_eye  : HCSR04.HCSR04;
+      dis_left : float;
+      
       right_eye : HCSR04.HCSR04;
-
+      dis_right : float;
+      
+      -- other --
       result  : boolean;
       bd : key_info;
       
@@ -31,14 +35,10 @@ package body brain is
       T_period : constant Time_Span := Milliseconds (16); --orginal 16
       next_eye : eye := Left;
       
-      dis_left : float;
-      dis_right : float;
+
+     
       
-      
-      -- testing variables --
-      comp_test_pre, comp_test_post    : Time := Clock;
-      comp_span :  Time_Span;
-      comp_sleep : constant  Time_Span := Milliseconds(100);
+
    begin
       -- port mapping --
       right_eye.trig := 2; 
@@ -53,28 +53,19 @@ package body brain is
          when left =>
             HCSR04.measure(left_eye, dis_left, result);
             bd.distance_left := integer(float'rounding(dis_left*100.0));
-            last := Clock;
-            delay until last + T_period;
             brain_sync.set_brain_data(bd);
             next_eye := right;
+            last := Clock;
+            delay until last + T_period;
             
          when right =>
             HCSR04.measure(right_eye, dis_right, result);
-            bd.distance_right := integer(float'rounding(dis_right*100.0));
+            bd.distance_right := integer(float'rounding(dis_right*100.0)); 
+            brain_sync.set_brain_data(bd);
+            next_eye := left;   
             last := Clock;
             delay until last + T_period;
-            brain_sync.set_brain_data(bd);
-            next_eye := left;    
          end case;  
-         
-          ------------------
-         --TESTING BLOCK--
-         ------------------
-         --comp_test_post := clock; --for testing computation time
-         --comp_span := comp_test_post - comp_test_pre;
-         --MicroBit.Console.Put_Line(To_Duration(comp_span)'Image);
-         --delay until comp_test_post + comp_sleep;
-          ------------------ 
       end loop;
    end Look;
    
@@ -85,47 +76,24 @@ package body brain is
       -- scheduling management --
       last     : Time := Clock;
       T_period : constant Time_Span := Milliseconds (4); --orginal 8
-      
-      
-      
+           
    begin
-      loop
-         
-         
-         brain_sync.get_brain_data(bd); -- fetch data --
-         bd.distance_dif := abs(bd.distance_left - bd.distance_right);
-         
-         
-         if (bd.distance_dif < 2) then
-            bd.next_speed := 0;
-            bd.next_direction := L298N_MDM.stop;
-         elsif (bd.distance_left < bd.distance_right) then
-            if (bd.distance_left > 60) then
-               bd.next_speed := 0;
-            elsif(bd.distance_left > 40) then
-               bd.next_speed := 480;
-            elsif(bd.distance_left <= 1) then
-               bd.next_speed := 0;
-            else
-               bd.next_speed := L298N_MDM.speedControl(viewRange(bd.distance_left)*viewRange(12)); --speed control, far away = high speed. Close = low speed.
-            end if;
-            bd.next_direction := L298N_MDM.left;
-         elsif (bd.distance_right < bd.distance_left) then
+      loop         
+         brain_sync.get_brain_data(bd); -- fetch data --         
+        
+                
+         if bd.distance_left > bd.distance_right then         
+            bd.min_dist := bd.distance_right;                
+            bd.distance_dif := bd.distance_left - bd.distance_right;            
+            bd.next_direction := L298N_MDM.right;   
             
-            if (bd.distance_right > 60) then
-               bd.next_speed := 0;
-            elsif(bd.distance_right > 40) then
-               bd.next_speed := 480;
-            elsif(bd.distance_right <= 1) then
-               bd.next_speed := 0;
-            else
-               bd.next_speed := L298N_MDM.speedControl(viewRange(bd.distance_right)*viewRange(12)); --speed control, far away = high speed. Close = low speed.
-            end if;
-            bd.next_direction := L298N_MDM.right;
+         else         
+            bd.min_dist := bd.distance_left;        
+            bd.distance_dif := bd.distance_right - bd.distance_left;           
+            bd.next_direction := L298N_MDM.left;  
          end if;
-         brain_sync.set_brain_data(bd);
-         
 
+         brain_sync.set_brain_data(bd);
          last := Clock;
          delay until last + T_period;
       end loop;
@@ -140,11 +108,6 @@ package body brain is
       last     : Time := Clock;
       T_period : constant Time_Span := Milliseconds (8); --orginal 8
       
-      -- testing variables --
-      comp_test_pre, comp_test_post    : Time := Clock;
-      comp_span :  Time_Span;
-      comp_sleep : constant  Time_Span := Milliseconds(100);
-      
    begin 
       
       wheels.IN_1 := 7;  
@@ -152,20 +115,14 @@ package body brain is
       wheels.SPD_1 := 0; --analog pwm
       MicroBit.IOsForTasking.Set_Analog_Period_Us(16); --16 works best
       
-      loop
-         --comp_test_pre := clock; --for testing computation time
-         
+      loop         
          brain_sync.get_brain_data(bd); -- fetch data --
-         L298N_MDM.move(wheels, bd.next_direction, bd.next_speed);   
-         ------------------
-         --TESTING BLOCK--
-         ------------------
-         --comp_test_post := clock; --for testing computation time
-         --comp_span := comp_test_post - comp_test_pre;
-         --MicroBit.Console.Put_Line(bd.next_speed'Image);
-         --delay until comp_test_post + comp_sleep;
-         ------------------ 
-         
+         if (bd.min_dist < 70 and bd.min_dist > 3 and bd.distance_dif > 1) then
+            L298N_MDM.move(wheels, bd.next_direction, L298N_MDM.speedControl(500));
+         else
+            L298N_MDM.move(wheels, L298N_MDM.stop, L298N_MDM.speedControl(1));  
+         end if;
+ 
          last := Clock;
          delay until last + T_period;
       end loop;

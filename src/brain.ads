@@ -13,7 +13,7 @@ with L298N_MDM;             --our motor controller package
 package brain is
    -- Shared data --
    type key_info is record
-      distance_left, distance_right, distance_dif : integer;
+      distance_left, distance_right, distance_dif, min_dist : integer;
       next_direction : L298N_MDM.dirId;
       next_speed     : L298N_MDM.speedControl;     
    end record;
@@ -28,6 +28,7 @@ package brain is
    
    -- QOL-eyes --
    type eye is (left, right);
+   type dist is (lock_on, adjust, OOB);
    
    -- task set --
    task Move with Priority => 3;
