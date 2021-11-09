@@ -11,6 +11,10 @@ package Microbit.PinInterrupt is
    eventChannel2 : nRF.Event_Type renames nRF.Events.GPIOTE_IN_2;
    eventChannel3 : nRF.Event_Type renames nRF.Events.GPIOTE_IN_3;
 
+   rising : nRF.GPIO.Tasks_And_Events.Event_Polarity renames nRF.GPIO.Tasks_And_Events.Rising_Edge;
+   falling : nRF.GPIO.Tasks_And_Events.Event_Polarity renames nRF.GPIO.Tasks_And_Events.Falling_Edge;
+   change : nRF.GPIO.Tasks_And_Events.Event_Polarity renames nRF.GPIO.Tasks_And_Events.Any_Change;
+
 
 
    --Attaches a pin to an GPIOTE channel and enables the event and interrupt

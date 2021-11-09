@@ -11,9 +11,27 @@ package body HCSR04 is
 
       procedure EchoHandler is
       begin
-         released := True;
+         if(nRF.Events.Triggered(evtType)) then
+            nRF.Events.Clear(evtType);
+            released := True;
+         end if;
+
       end EchoHandler;
+
+      procedure setEventType(et : nRF.Event_Type) is
+      begin
+         evtType := et;
+      end setEventType;
+
   end EchoHandlerInterface;
+
+
+   procedure initializeInterrupt(hc : in HCSR04;channel : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel) is
+   evtType : nRF.Event_Type;
+   begin
+      MicroBit.PinInterrupt.AttachPinToChannel(nRF.GPIO.GPIO_Pin_Index(hc.echo),channel,MicroBit.PinInterrupt.change,evtType);
+      EchoHandlerInterface.setEventType(evtType);
+   end initializeInterrupt;
 
 
    --Measures the distance in meters
