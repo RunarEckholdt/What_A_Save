@@ -12,7 +12,6 @@ package Microbit.PinInterrupt is
    eventChannel3 : nRF.Event_Type renames nRF.Events.GPIOTE_IN_3;
 
 
-
    --Attaches a pin to an GPIOTE channel and enables the event and interrupt
    procedure AttachPinToChannel(pin : in nRF.GPIO.GPIO_Pin_Index;
                                   channel : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel;
