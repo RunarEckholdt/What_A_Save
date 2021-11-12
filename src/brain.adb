@@ -109,7 +109,6 @@ package body brain is
       last     : Time := Clock;
       T_period : constant Time_Span := Milliseconds (8); --orginal 8
 
-      -- haha --
       
       
    begin 
@@ -124,12 +123,12 @@ package body brain is
          
          brain_sync.get_brain_data(bd); -- fetch data --
          
-         if (bd.min_dist < 70 and bd.min_dist > 3 and bd.distance_dif > 3) then
-            L298N_MDM.move(wheels, bd.next_direction, L298N_MDM.speedControl(500));
-           -- MicroBit.Music.Play (27, MicroBit.Music.Pitch(bd.min_dist*60));
+         if (bd.min_dist < 70 and bd.distance_dif > 2) then  --If object is closer than 70 cm and difference between sensors are more than 2 cm; drive.
+            L298N_MDM.move(wheels, bd.next_direction, L298N_MDM.speedControl(850));
+            MicroBit.Music.Play (27, MicroBit.Music.Pitch(bd.min_dist*100));
          else
-            L298N_MDM.move(wheels, L298N_MDM.stop, L298N_MDM.speedControl(1));  
-           -- MicroBit.Music.Play (27, rest);
+            L298N_MDM.move(wheels, L298N_MDM.stop, L298N_MDM.speedControl(0));  
+            MicroBit.Music.Play (27, rest);
          end if;
  
          --last := Clock;
