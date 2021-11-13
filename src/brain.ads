@@ -6,7 +6,6 @@ with MicroBit.IOsForTasking; use MicroBit.IOsForTasking;
 with MicroBit.Console;
 with nRF.GPIO.Tasks_And_Events;
 
-with ada.Synchronous_Task_Control; use ada.Synchronous_Task_Control;
 
 --with Microbit.PinInterrupt; --our interrupt package
 With HCSR04;                --our ultra-sonic package

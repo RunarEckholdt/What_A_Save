@@ -37,12 +37,7 @@ package body brain is
       T_period : constant Time_Span := Milliseconds (16); --orginal 16
       next_eye : eye := Left;
       
-      --  --  --  --  --  --
-      timeS : Time_Span;
-      timeSFl : Float;
-      speedOfSound : constant Float := 343.0;
-      
-      echoLow, echoHigh : Suspension_Object;
+
       
    begin
       -- port mapping --
@@ -56,14 +51,9 @@ package body brain is
          last := Clock;
          
          case next_eye is        
-         when left =>
-            HCSR04.trig(left_eye);
-            HCSR04.pulseIn(left_eye, timeS, result, echoHigh, echoLow);
-            Suspend_Until_True(echoHigh)
-              
-            
-            --  HCSR04.measure(left_eye, dis_left, result);
-            --  bd.distance_left := integer(float'rounding(dis_left*100.0));
+         when left => 
+            HCSR04.measure(left_eye, dis_left, result);
+            bd.distance_left := integer(float'rounding(dis_left*100.0));
             
          when right =>
             HCSR04.measure(right_eye, dis_right, result);
