@@ -6,12 +6,15 @@ with MicroBit.IOsForTasking; use MicroBit.IOsForTasking;
 with MicroBit.Console;
 with nRF.GPIO.Tasks_And_Events;
 
-with Microbit.PinInterrupt; --our interrupt package
+with ada.Synchronous_Task_Control; use ada.Synchronous_Task_Control;
+
+--with Microbit.PinInterrupt; --our interrupt package
 With HCSR04;                --our ultra-sonic package
 with L298N_MDM;             --our motor controller package
 
--- haha --
-with MicroBit.Music; use MicroBit.Music;
+
+
+with MicroBit.Music; use MicroBit.Music; -- for robot sounds
 
 package brain is
    -- Shared data --
@@ -34,7 +37,7 @@ package brain is
    type dist is (lock_on, adjust, OOB);
    
    -- task set --
-   task Move with Priority => 3;
+   task Move with Priority  => 3;   
    task Think with Priority => 2;
-   task Look with Priority => 1;
+   task Look with Priority  => 1;  -- this should be higher when interrups are working.
 end brain;

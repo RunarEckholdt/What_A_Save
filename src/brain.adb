@@ -15,6 +15,8 @@ package body brain is
       end set_brain_data;
    end brain_sync;
    
+   
+
    -- look for target --
    task body Look is  -- 0.007 worst?
       -- task components --
@@ -35,6 +37,13 @@ package body brain is
       T_period : constant Time_Span := Milliseconds (16); --orginal 16
       next_eye : eye := Left;
       
+      --  --  --  --  --  --
+      timeS : Time_Span;
+      timeSFl : Float;
+      speedOfSound : constant Float := 343.0;
+      
+      echoLow, echoHigh : Suspension_Object;
+      
    begin
       -- port mapping --
       right_eye.trig := 2; 
@@ -48,30 +57,28 @@ package body brain is
          
          case next_eye is        
          when left =>
-            --last := Clock;
-            HCSR04.measure(left_eye, dis_left, result);
-            bd.distance_left := integer(float'rounding(dis_left*100.0));
-            brain_sync.set_brain_data(bd);
-            next_eye := right;
-            --last := Clock;
+            HCSR04.trig(left_eye);
+            HCSR04.pulseIn(left_eye, timeS, result, echoHigh, echoLow);
+            Suspend_Until_True(echoHigh)
+              
             
+            --  HCSR04.measure(left_eye, dis_left, result);
+            --  bd.distance_left := integer(float'rounding(dis_left*100.0));
             
          when right =>
-            --last := Clock;
             HCSR04.measure(right_eye, dis_right, result);
             bd.distance_right := integer(float'rounding(dis_right*100.0)); 
-            brain_sync.set_brain_data(bd);
-            next_eye := left;   
-            --last := Clock;
-            --delay until last + T_period;
+        
          end case;  
          
+         
+         brain_sync.set_brain_data(bd); -- update data --
          delay until last + T_period;
       end loop;
    end Look;
    
    
-   -- set think --
+   -- calculate next move --
    task body Think is --worst computation time: 0.000030518
       bd : key_info;
       -- scheduling management --
@@ -86,16 +93,14 @@ package body brain is
          if bd.distance_left > bd.distance_right then         
             bd.min_dist := bd.distance_right;                
             bd.distance_dif := bd.distance_left - bd.distance_right;            
-            bd.next_direction := L298N_MDM.right;   
-            
+            bd.next_direction := L298N_MDM.right;        
          else         
             bd.min_dist := bd.distance_left;        
             bd.distance_dif := bd.distance_right - bd.distance_left;           
             bd.next_direction := L298N_MDM.left;  
          end if;
 
-         brain_sync.set_brain_data(bd);
-         --last := Clock;
+         brain_sync.set_brain_data(bd); -- update data --
          delay until last + T_period;
       end loop;
    end think;
@@ -109,8 +114,6 @@ package body brain is
       last     : Time := Clock;
       T_period : constant Time_Span := Milliseconds (8); --orginal 8
 
-      
-      
    begin 
       
       wheels.IN_1 := 7;  
@@ -119,8 +122,7 @@ package body brain is
       MicroBit.IOsForTasking.Set_Analog_Period_Us(16); --16 works best
       
       loop      
-         last := Clock;
-         
+         last := Clock;     
          brain_sync.get_brain_data(bd); -- fetch data --
          
          if (bd.min_dist < 70 and bd.distance_dif > 2) then  --If object is closer than 70 cm and difference between sensors are more than 2 cm; drive.
@@ -130,8 +132,7 @@ package body brain is
             L298N_MDM.move(wheels, L298N_MDM.stop, L298N_MDM.speedControl(0));  
             MicroBit.Music.Play (27, rest);
          end if;
- 
-         --last := Clock;
+
          delay until last + T_period;
       end loop;
    end Move;
