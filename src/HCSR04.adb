@@ -3,65 +3,29 @@
 package body HCSR04 is
 
 
-   --  procedure Wait is
-   --  begin
-   --     Ada.Synchronous_Task_Control.Suspend_Until_True(released);
-   --     --Ada.Synchronous_Task_Control.Set_False(released);
-   --     --released := False;
-   --  end Wait;
+
 
    protected body EchoHandlerInterface is
 
-      --  entry Signal(intrEvent : in InterruptEvent) when True is
-      --  begin
-      --     null;
-      --  end Signal;
-      --
-      --  procedure AcceptSignal(evt : out InterruptEvent) is
-      --  begin
-      --     Accept Signal(intrEvent : in InterruptEvent) do
-      --        evt := intrEvent;
-      --     end Signal;
-      --  end AcceptSignal;
+
 
       entry Wait when released is
       begin
          released := False;
       end Wait;
 
-      --  entry Signal(intrEvent : in InterruptEvent) is
-      --  begin
-      --
-      --  end Signal;
+
 
 
       procedure EchoHandler is
 
       begin
-         if(nRF.Events.Triggered(nRF.Events.GPIOTE_IN_0))then
-            nRF.Events.Clear(nRF.Events.GPIOTE_IN_0);
-            --lastEvent := rising;
-            --Signal(rising);
-            --MicroBit.Console.Put_Line("Falling");
+         if(nRF.Events.Triggered(evtType))then
+            nRF.Events.Clear(evtType);
             released := True;
          end if;
 
-         --  if(nRF.Events.Triggered(nRF.Events.GPIOTE_IN_1))then
-         --     nRF.Events.Clear(nRF.Events.GPIOTE_IN_1);
-         --     lastEvent := falling;
-         --     --Signal(falling);
-         --     MicroBit.Console.Put_Line("Falling");
-         --     released := True;
-         --  end if;
 
-
-
-
-
-
-         --Ada.Synchronous_Task_Control.Set_True(released);
-         --MicroBit.Console.Put("Interrupted: ");
-         --MicroBit.Console.Put_Line(MicroBit.IOsForTasking.Set(28)'Image);
 
 
       end EchoHandler;
@@ -71,10 +35,7 @@ package body HCSR04 is
          evtType := et;
       end setEventType;
 
-      --  procedure getLastEvent(lEvent : out InterruptEvent) is
-      --  begin
-      --     lEvent := lastEvent;
-      --  end getLastEvent;
+
 
   end EchoHandlerInterface;
 
@@ -82,9 +43,8 @@ package body HCSR04 is
    procedure initializeInterrupt(hc : in HCSR04;channel : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel) is
    evtType : nRF.Event_Type;
    begin
-      MicroBit.PinInterrupt.AttachPinToChannel(28,channel,MicroBit.PinInterrupt.falling,evtType);
-      --MicroBit.PinInterrupt.AttachPinToChannel(28,1,MicroBit.PinInterrupt.falling, evtType);
-      EchoHandlerInterface.setEventType(nRF.Events.GPIOTE_IN_0);
+      MicroBit.PinInterrupt.AttachPinToChannel(MicroBit.PinInterrupt.Pin_Id(hc.echo),channel,MicroBit.PinInterrupt.falling,evtType);
+      EchoHandlerInterface.setEventType(evtType);
    end initializeInterrupt;
 
 
@@ -125,38 +85,17 @@ package body HCSR04 is
 
    begin
 
+      --wait until the HCSR04 is done sending signal
       while(MicroBit.IOsForTasking.Set(hc.echo) = False) loop
          null;
       end loop;
 
 
-
-      --  while(lastEvent /= rising) loop
-      --     EchoHandlerInterface.getLastEvent(lastEvent);
-      --  end loop;
-
-
-
-
       startT := Clock;
 
-      --  while(MicroBit.IOsForTasking.Set(hc.echo) = True) loop
-      --     null;
-      --
-      --  end loop;
-
-      --EchoHandlerInterface.Wait;
-      --  if(MicroBit.IOsForTasking.Set(hc.echo) = True) then
-      --     --null;
-      --
-      --  end if;
-
-
+      --Wait signal is recieved back or module timeout
       EchoHandlerInterface.Wait;
 
-      --while(lastEvent /= falling) loop
-      --EchoHandlerInterface.getLastEvent(lastEvent);
-      --end loop;
       endT := Clock;
       pulseTime := endT - startT;
       result := True;

@@ -80,7 +80,7 @@ package body brain is
       bd : key_info;
       -- scheduling management --
       last     : Time := Clock;
-      T_period : constant Time_Span := Milliseconds (4); --orginal 8
+      T_period : constant Time_Span := Milliseconds (8); --orginal 8
            
    begin
       loop  
@@ -121,7 +121,7 @@ package body brain is
       wheels.IN_1 := 7;  
       wheels.IN_2 := 6;  
       wheels.SPD_1 := 0; --analog pwm
-      MicroBit.IOsForTasking.Set_Analog_Period_Us(16); --16 works best
+      --MicroBit.IOsForTasking.Set_Analog_Period_Us(16); --16 works best
       
       loop      
          last := Clock;

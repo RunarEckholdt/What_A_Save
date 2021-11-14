@@ -1,6 +1,5 @@
 with ADA.Real_Time; use ADA.Real_Time;
 with nRF.GPIO;
-with MicroBit;
 with MicroBit.IOsForTasking; use MicroBit.IOsForTasking;
 with MicroBit.Console;
 with MicroBit.PinInterrupt;
@@ -14,33 +13,26 @@ with System;
 
 
 package HCSR04 is
-   --  Procedure Wait;
-   --  released : Ada.Synchronous_Task_Control.Suspension_Object;
    type InterruptEvent is (rising,falling,change);
+
+   subtype Pin is MicroBit.IOsForTasking.Pin_Id
+   		with Predicate => Supports(Pin, Analog);
 
    protected EchoHandlerInterface is
 
       entry Wait;
-      --  entry Signal(intrEvent : in InterruptEvent);
-      --
-      --  procedure AcceptSignal(intrEvent : out InterruptEvent);
 
       procedure EchoHandler with Attach_Handler => Ada.Interrupts.Names.GPIOTE_Interrupt;
-      pragma Interrupt_Priority (253);
+      pragma Interrupt_Priority (253); --Priority 3
       procedure setEventType(et : in nRF.Event_Type);
-      --pragma Attach_Handler(EchoHandler,Ada.Interrupts.Names.GPIOTE_Interrupt);
-      --procedure getLastEvent(lEvent : out InterruptEvent);
 
    private
       released : Boolean := False;
-      --lastEvent : InterruptEvent;
-
       evtType : nRF.Event_Type;
    end EchoHandlerInterface;
 
 
-   subtype Pin is MicroBit.IOsForTasking.Pin_Id
-   		with Predicate => Supports(Pin, Analog);
+
 
    type HCSR04 is record
       echo, trig : Pin;
