@@ -17,7 +17,7 @@ package body Microbit.PinInterrupt is
             when 2 => evtType := eventChannel2;
             when 3 => evtType := eventChannel3;
          end case;
-         nRF.Events.Enable_Interrupt(evtType);
+         nRF.Events.Enable_Interrupt(nRF.Events.GPIOTE_IN_0);
 
       end AttachPinToChannel;
 

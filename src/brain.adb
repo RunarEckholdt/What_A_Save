@@ -33,15 +33,19 @@ package body brain is
       -- scheduling management --
       last     : Time := Clock;
       T_period : constant Time_Span := Milliseconds (16); --orginal 16
-      next_eye : eye := Left;
+      next_eye : eye := right;
       
    begin
+      
+      
       -- port mapping --
       right_eye.trig := 2; 
       left_eye.trig  := 3; 
       
       left_eye.echo  := 4;  --shared echo pin
       right_eye.echo := 4;  --shared echo pin
+      
+      HCSR04.initializeInterrupt(left_eye,0);
       
       loop
          last := Clock;

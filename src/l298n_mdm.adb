@@ -8,11 +8,11 @@ package body L298N_MDM is
       case direction is
          
          when left =>
-            MicroBit.IOsForTasking.Write(mdm.SPD_1, spd); --Write is for analog
+            --MicroBit.IOsForTasking.Write(mdm.SPD_1, spd); --Write is for analog
             MicroBit.IOsForTasking.Set(mdm.IN_1, true);
             MicroBit.IOsForTasking.Set(mdm.IN_2, false);
          when right =>
-            MicroBit.IOsForTasking.Write(mdm.SPD_1, spd);
+           -- MicroBit.IOsForTasking.Write(mdm.SPD_1, spd);
             MicroBit.IOsForTasking.Set(mdm.IN_1, false);
             MicroBit.IOsForTasking.Set(mdm.IN_2, true);
          when stop =>

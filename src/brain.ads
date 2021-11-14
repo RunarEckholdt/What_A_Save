@@ -34,7 +34,7 @@ package brain is
    type dist is (lock_on, adjust, OOB);
    
    -- task set --
-   task Move with Priority => 3;
+   task Move with Priority => 1;
    task Think with Priority => 2;
-   task Look with Priority => 1;
+   task Look with Priority => 3; 
 end brain;
