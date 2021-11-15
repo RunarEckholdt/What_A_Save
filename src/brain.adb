@@ -29,13 +29,13 @@ package body brain is
       --
       
       -- other --
-      result  : boolean;
+      resultLeft, resultRight  : boolean;
       bd : key_info;
       
       -- scheduling management --
       last     : Time := Clock;
       T_period : constant Time_Span := Milliseconds (16); --orginal 16
-      next_eye : eye := Left;
+      next_eye : eye := left;
       
 
       
@@ -50,19 +50,16 @@ package body brain is
       loop
          last := Clock;
          
-         case next_eye is        
-         when left => 
-            HCSR04.measure(left_eye, dis_left, result);
-            bd.distance_left := integer(float'rounding(dis_left*100.0));
+         HCSR04.measure(left_eye, dis_left, resultLeft);
+         bd.distance_left := integer(float'rounding(dis_left*100.0));
+
+         HCSR04.measure(right_eye, dis_right, resultRight);
+         bd.distance_right := integer(float'rounding(dis_right*100.0)); 
             
-         when right =>
-            HCSR04.measure(right_eye, dis_right, result);
-            bd.distance_right := integer(float'rounding(dis_right*100.0)); 
-        
-         end case;  
+         if (resultLeft = true or resultRight = true) then
+            brain_sync.set_brain_data(bd); -- update data --
+         end if;
          
-         
-         brain_sync.set_brain_data(bd); -- update data --
          delay until last + T_period;
       end loop;
    end Look;
@@ -83,11 +80,11 @@ package body brain is
          if bd.distance_left > bd.distance_right then         
             bd.min_dist := bd.distance_right;                
             bd.distance_dif := bd.distance_left - bd.distance_right;            
-            bd.next_direction := L298N_MDM.right;        
+            bd.next_direction := L298N_MDM.left;        
          else         
             bd.min_dist := bd.distance_left;        
             bd.distance_dif := bd.distance_right - bd.distance_left;           
-            bd.next_direction := L298N_MDM.left;  
+            bd.next_direction := L298N_MDM.right;  
          end if;
 
          brain_sync.set_brain_data(bd); -- update data --
@@ -103,24 +100,45 @@ package body brain is
       -- scheduling management --
       last     : Time := Clock;
       T_period : constant Time_Span := Milliseconds (8); --orginal 8
+      
+      probe    : constant Time_Span := Milliseconds (600);
+      lastProbe: Time := Clock;
+      probeDir : L298N_MDM.dirId := L298N_MDM.left;
+      probeBool : Boolean := true;
 
    begin 
       
       wheels.IN_1 := 7;  
       wheels.IN_2 := 6;  
       wheels.SPD_1 := 0; --analog pwm
-      MicroBit.IOsForTasking.Set_Analog_Period_Us(16); --16 works best
+      MicroBit.IOsForTasking.Set_Analog_Period_Us(20_000); --20kHZ from data sheet
       
       loop      
          last := Clock;     
          brain_sync.get_brain_data(bd); -- fetch data --
          
-         if (bd.min_dist < 70 and bd.distance_dif > 2) then  --If object is closer than 70 cm and difference between sensors are more than 2 cm; drive.
-            L298N_MDM.move(wheels, bd.next_direction, L298N_MDM.speedControl(850));
-            MicroBit.Music.Play (27, MicroBit.Music.Pitch(bd.min_dist*100));
+         if (bd.min_dist < 70 and bd.distance_dif > 1) then  --If object is closer than 70 cm and difference between sensors are more than 2 cm; drive.
+            L298N_MDM.move(wheels, bd.next_direction, L298N_MDM.speedControl(800));
+            --MicroBit.Music.Play (27, MicroBit.Music.Pitch(bd.min_dist*100));
+         --  else
+         elsif (bd.min_dist > 70) then
+            
+            if (Clock > lastProbe + probe) then
+               if (probeBool = true) then
+                  probeDir := L298N_MDM.right;
+                  probeBool := false;
+               else
+                  probeDir := L298N_MDM.left;
+                  probeBool := true;
+               end if;
+               lastProbe := Clock + probe;
+            end if;
+            
+            L298N_MDM.move(wheels, probeDir, L298N_MDM.speedControl(300));
+            
          else
             L298N_MDM.move(wheels, L298N_MDM.stop, L298N_MDM.speedControl(0));  
-            MicroBit.Music.Play (27, rest);
+               --MicroBit.Music.Play (27, rest); 
          end if;
 
          delay until last + T_period;
