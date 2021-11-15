@@ -43,7 +43,8 @@ package body HCSR04 is
    procedure initializeInterrupt(hc : in HCSR04;channel : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel) is
    evtType : nRF.Event_Type;
    begin
-      MicroBit.PinInterrupt.AttachPinToChannel(MicroBit.PinInterrupt.Pin_Id(hc.echo),channel,MicroBit.PinInterrupt.falling,evtType);
+      --MicroBit.PinInterrupt.AttachPinToChannel(MicroBit.PinInterrupt.Pin_Id(hc.echo),channel,MicroBit.PinInterrupt.falling,evtType);
+      MicroBit.PinInterrupt.AttachPinToChannel(28,channel,MicroBit.PinInterrupt.falling,evtType);
       EchoHandlerInterface.setEventType(evtType);
    end initializeInterrupt;
 

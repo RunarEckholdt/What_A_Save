@@ -10,7 +10,8 @@ package body Microbit.PinInterrupt is
                                 evtType  : out nRF.Event_Type ) is
 
    begin
-      nRF.GPIO.Tasks_And_Events.Enable_Event(channel, nRF.GPIO.GPIO_Pin_Index(PinIDToGPIOMap(pin).Pin), polarity);
+      --nRF.GPIO.Tasks_And_Events.Enable_Event(channel, nRF.GPIO.GPIO_Pin_Index(PinIDToGPIOMap(pin).Pin), polarity);
+      nRF.GPIO.Tasks_And_Events.Enable_Event(channel, 28, polarity);
       nRF.Interrupts.Enable(nRF.Interrupts.GPIOTE_Interrupt);
 
       case channel is
@@ -19,7 +20,7 @@ package body Microbit.PinInterrupt is
          when 2 => evtType := eventChannel2;
          when 3 => evtType := eventChannel3;
       end case;
-      nRF.Events.Enable_Interrupt(nRF.Events.GPIOTE_IN_0);
+      nRF.Events.Enable_Interrupt(evtType);
 
    end AttachPinToChannel;
 

@@ -45,7 +45,7 @@ package body brain is
       left_eye.echo  := 4;  --shared echo pin
       right_eye.echo := 4;  --shared echo pin
       
-      HCSR04.initializeInterrupt(left_eye,0);
+      HCSR04.initializeInterrupt(left_eye,2);
       
       loop
          last := Clock;
@@ -118,10 +118,10 @@ package body brain is
       
    begin 
       
-      wheels.IN_1 := 7;  
-      wheels.IN_2 := 6;  
+      wheels.IN_1 := 6;  
+      wheels.IN_2 := 7;  
       wheels.SPD_1 := 0; --analog pwm
-      --MicroBit.IOsForTasking.Set_Analog_Period_Us(16); --16 works best
+      Set_Analog_Period_Us(20_000); --16 works best
       
       loop      
          last := Clock;
