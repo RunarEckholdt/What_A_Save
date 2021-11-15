@@ -14,14 +14,14 @@ package L298N_MDM is
    subtype Pin_A is MicroBit.IOsForTasking.Pin_Id
      with Predicate => Supports(Pin_A, Analog);
    
-   subtype speedControl is MicroBit.IOsForTasking.Analog_Value range 0..1023;
+   subtype speedControl is MicroBit.IOsForTasking.Analog_Value range 0..1023;  -- you can compress using multiplication. e.g ((0 .. 256) * 4) - 1. 
    
      
    type dirId is (left, right, stop);
            
    type L298N is record
-      IN_1, IN_2   : Pin_D;
-      SPD_1, SPD_2 : Pin_A;
+      IN_L1, IN_L2, IN_R1, IN_R2   : Pin_D; -- left and right side pins to controll multiple motors.
+      SPD_L, SPD_R : Pin_A; -- PWM speed control pins.
    end record;
    
    

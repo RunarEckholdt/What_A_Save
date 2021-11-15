@@ -5,7 +5,7 @@ package body L298N_MDM is
        
    begin  
       
-      case direction is
+      case direction is --if you want more speed modes; you can add new directions and cases.
          
          when left =>
             MicroBit.IOsForTasking.Write(mdm.SPD_1, spd); --Write is for analog
