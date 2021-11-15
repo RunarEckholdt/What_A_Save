@@ -2,6 +2,53 @@
 
 package body HCSR04 is
 
+
+
+
+   protected body EchoHandlerInterface is
+
+
+
+      entry Wait when released is
+      begin
+         released := False;
+      end Wait;
+
+
+
+
+      procedure EchoHandler is
+
+      begin
+         if(nRF.Events.Triggered(evtType))then
+            nRF.Events.Clear(evtType);
+            released := True;
+         end if;
+
+
+
+
+      end EchoHandler;
+
+      procedure setEventType(et : nRF.Event_Type) is
+      begin
+         evtType := et;
+      end setEventType;
+
+
+
+  end EchoHandlerInterface;
+
+
+   procedure initializeInterrupt(hc : in HCSR04;channel : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel) is
+   evtType : nRF.Event_Type;
+   begin
+      --MicroBit.PinInterrupt.AttachPinToChannel(MicroBit.PinInterrupt.Pin_Id(hc.echo),channel,MicroBit.PinInterrupt.falling,evtType);
+      MicroBit.PinInterrupt.AttachPinToChannel(28,channel,MicroBit.PinInterrupt.falling,evtType);
+      EchoHandlerInterface.setEventType(evtType);
+   end initializeInterrupt;
+
+
    --Measures the distance in meters
    procedure measure(hc : in HCSR04 ; distance : out Float; result : out Boolean) is
       timeS : Time_Span;
@@ -25,7 +72,7 @@ package body HCSR04 is
    begin
       MicroBit.IOsForTasking.Set(hc.trig,True);
       trigStart := Clock;
-      delay until trigStart + Microseconds(10); --Fetched from the timing diagram
+      delay until trigStart + Microseconds(100); --Fetched from the timing diagram
       MicroBit.IOsForTasking.Set(hc.trig,False);
    end trig;
 
@@ -35,39 +82,23 @@ package body HCSR04 is
    procedure pulseIn(hc : in HCSR04; pulseTime : out Time_Span; result : out Boolean) is
       startT : Time;
       endT : Time;
-      --afterTrig : Time;
-      --sendPulseTime : Time_Span;
-      --timeOutSend : constant Time_Span := Milliseconds(10);
-      --timeOutPulse : constant Time_Span := Milliseconds(50);
+      lastEvent : InterruptEvent := falling;
 
    begin
-      --afterTrig := Clock;
+
+      --wait until the HCSR04 is done sending signal
       while(MicroBit.IOsForTasking.Set(hc.echo) = False) loop
-         --asm(wfi ) --TODO change to wait for interupt
-         --  if((Clock - afterTrig) > timeOutSend) then
-         --     MicroBit.Console.Put_Line("HCSR04 did not trigger");
-         --     result := False;
-         --     return;
-         --  end if;
          null;
       end loop;
-      --sendPulseTime := Clock - afterTrig;
-      --MicroBit.Console.Put_Line("Send Timing: " & To_Duration(sendPulseTime)'Image & "s"); --Logs time for the send pulses.
+
+
       startT := Clock;
 
-      while(MicroBit.IOsForTasking.Set(hc.echo) = True) loop
-         --asm(wfi ) --TODO change to wait for interupt
-         --  if((Clock - startT) > timeOutPulse) then
-         --     MicroBit.Console.Put_Line("HCSR04 timed out");
-         --     result := False;
-         --     return;
+      --Wait signal is recieved back or module timeout
+      EchoHandlerInterface.Wait;
 
-         --end if;
-         null;
-      end loop;
       endT := Clock;
       pulseTime := endT - startT;
-      --MicroBit.Console.Put_Line(pulseTime'Image);
       result := True;
    end pulseIn;
 

@@ -18,6 +18,7 @@ with MicroBit.Accelerometer;
 
 with MicroBit.Music; use MicroBit.Music; -- for robot sounds
 
+
 package brain is
    -- Shared data --
    type key_info is record
@@ -40,7 +41,7 @@ package brain is
    type dist is (lock_on, adjust, OOB);
    
    -- task set --
-   task Move with Priority  => 3;   
+   task Move with Priority => 1;
    task Think with Priority => 2;
-   task Look with Priority  => 1;  -- this should be higher when interrups are working.
+   task Look with Priority => 3; 
 end brain;

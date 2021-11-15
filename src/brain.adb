@@ -40,14 +40,19 @@ package body brain is
       next_eye : eye := left;
       
 
+
       
    begin
+      
+      
       -- port mapping --
       right_eye.trig := 2; 
       left_eye.trig  := 3; 
       
       left_eye.echo  := 4;  --shared echo pin
       right_eye.echo := 4;  --shared echo pin
+      
+      HCSR04.initializeInterrupt(left_eye,2);
       
       loop
          last := Clock;
@@ -83,8 +88,7 @@ package body brain is
       -- scheduling management --
       last     : Time := Clock;
       T_period : constant Time_Span := Milliseconds (4); --orginal 8 but 4 works
-      
-       
+
    begin
       loop  
          last := Clock;    
@@ -132,10 +136,11 @@ package body brain is
 
    begin 
       
-      wheels.IN_1 := 7;  
-      wheels.IN_2 := 6;  
+      wheels.IN_1 := 6;  
+      wheels.IN_2 := 7;  
       wheels.SPD_1 := 0; --analog pwm
-      MicroBit.IOsForTasking.Set_Analog_Period_Us(20_000); --20kHZ from data sheet
+      Set_Analog_Period_Us(20_000); --20kHZ from data sheet
+
       
       loop      
          last := Clock;     
