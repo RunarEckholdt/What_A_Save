@@ -11,14 +11,18 @@ with nRF.GPIO.Tasks_And_Events;
 With HCSR04;                --our ultra-sonic package
 with L298N_MDM;             --our motor controller package
 
-
+with LSM303AGR; use LSM303AGR;
+with MicroBit.Accelerometer;
+--  with MicroBit.DisplayRT;
+--  with MicroBit.DisplayRT.Symbols;
 
 with MicroBit.Music; use MicroBit.Music; -- for robot sounds
 
 package brain is
    -- Shared data --
    type key_info is record
-      distance_left, distance_right, distance_dif, min_dist : integer;
+      distance_left, distance_right, distance_dif, min_dist : float;
+      probe_direction: L298N_MDM.dirId;
       next_direction : L298N_MDM.dirId;
       next_speed     : L298N_MDM.speedControl;     
    end record;
