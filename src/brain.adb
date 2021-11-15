@@ -136,8 +136,8 @@ package body brain is
 
    begin 
       
-      wheels.IN_1 := 6;  
-      wheels.IN_2 := 7;  
+      wheels.IN_1 := 7;  
+      wheels.IN_2 := 6;  
       wheels.SPD_1 := 0; --analog pwm
       Set_Analog_Period_Us(20_000); --20kHZ from data sheet
 
@@ -173,7 +173,7 @@ package body brain is
             end if;
             
            
-            L298N_MDM.move(wheels, probeDir, L298N_MDM.speedControl(900));
+            L298N_MDM.move(wheels, probeDir, L298N_MDM.speedControl(500));
             
             
          elsif bd.distance_dif < difLim then
