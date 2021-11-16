@@ -36,7 +36,7 @@ package body brain is
       
       -- scheduling management --
       last     : Time := Clock;
-      T_period : constant Time_Span := Milliseconds (16); --orginal 16
+      T_period : constant Time_Span := Milliseconds (MEASURE_PERIOD); 
       next_eye : eye := left;
       
 
@@ -46,13 +46,13 @@ package body brain is
       
       
       -- port mapping --
-      right_eye.trig := 2; 
-      left_eye.trig  := 3; 
+      right_eye.trig := HC_RIGHT_TRIG; 
+      left_eye.trig  := HC_LEFT_TRIG; 
       
-      left_eye.echo  := 4;  --shared echo pin
-      right_eye.echo := 4;  --shared echo pin
+      left_eye.echo  := HC_LEFT_ECHO; 
+      right_eye.echo := HC_RIGHT_EHCO; 
       
-      HCSR04.initializeInterrupt(left_eye,2);
+      HCSR04.initializeInterrupt(left_eye,ECHOHANDLER_GPTIOTE_CHANNEL);
       
       loop
          last := Clock;
@@ -87,7 +87,7 @@ package body brain is
       bd : key_info;
       -- scheduling management --
       last     : Time := Clock;
-      T_period : constant Time_Span := Milliseconds (4); --orginal 8 but 4 works
+      T_period : constant Time_Span := Milliseconds (CONTROLLER_PERIOD); 
 
    begin
       loop  
@@ -118,37 +118,36 @@ package body brain is
       bd : key_info;   
       -- scheduling management --
       last     : Time := Clock;
-      T_period : constant Time_Span := Milliseconds (8); --orginal 8
+      T_period : constant Time_Span := MOVE_PERIOD; 
       
-      difLim : constant float := 1.85;
+      difLim : constant float := MIN_DIFF;
       
-      switchProbe    : constant Time_Span := Milliseconds (450);
-      startProbe : constant Time_Span := Milliseconds(256);
+      switchProbe    : constant Time_Span := PROBE_SWITCH_DIR;
+      startProbe : constant Time_Span := PROBE_START_DELAY;
       
       nextProbe : Time := Clock;
       probeDir : L298N_MDM.dirId := L298N_MDM.left;
       probeBool : Boolean := true;
       
       nextDirSwitch : time := clock;
-      probeDebounce : Time_Span := Milliseconds(550); --600 is really nice acctually.
+      probeDebounce : constant Time_Span := PROBE_DEBOUNCE; 
    
       
 
    begin 
       
-      wheels.IN_1 := 7;  
-      wheels.IN_2 := 6;  
-      wheels.SPD_1 := 0; --analog pwm
+      wheels.IN_1 := MDM_IN1_PIN;  
+      wheels.IN_2 := MDM_IN2_PIN;  
+      wheels.SPD_1 := MDM_SPD_PIN; --analog pwm
       Set_Analog_Period_Us(20_000); --20kHZ from data sheet
 
       
       loop      
          last := Clock;     
          brain_sync.get_brain_data(bd); -- fetch data --
-       
          
          if (bd.min_dist < 60.0 and bd.distance_dif > difLim) then  --If object is closer than 70 cm and difference between sensors are more than 1.5 cm; drive.
-            L298N_MDM.move(wheels, bd.next_direction, L298N_MDM.speedControl(700));
+            L298N_MDM.move(wheels, bd.next_direction, L298N_MDM.speedControl(TRACK_MODE_SPEED));
             --MicroBit.Music.Play (27, MicroBit.Music.Pitch(bd.min_dist*100));
             nextProbe := Clock + startProbe;
 
@@ -173,11 +172,11 @@ package body brain is
             end if;
             
            
-            L298N_MDM.move(wheels, probeDir, L298N_MDM.speedControl(500));
+            L298N_MDM.move(wheels, probeDir, L298N_MDM.speedControl(PROBE_MODE_SPEED));
             
             
          elsif bd.distance_dif < difLim then
-            L298N_MDM.move(wheels, L298N_MDM.stop, L298N_MDM.speedControl(0)); 
+            L298N_MDM.move(wheels, L298N_MDM.stop, L298N_MDM.speedControl(NO_SPEED)); 
             --  nextProbe := Clock + startProbe;
          end if;
 

@@ -20,6 +20,52 @@ with MicroBit.Music; use MicroBit.Music; -- for robot sounds
 
 
 package brain is
+   
+   ----Configuration Constants-----------
+   
+   --------------Speed configurations----
+   TRACK_MODE_SPEED : constant L298N_MDM.speedControl := 700;
+   PROBE_MODE_SPEED : constant L298N_MDM.speedControl := 500;
+   NO_SPEED         : constant L298N_MDM.speedControl := 0;
+   
+   
+   --------------Pin configurations------
+   
+   --------------------Motor Driver------
+   MDM_IN1_PIN : constant L298N_MDM.Pin_D := 7;
+   MDM_IN2_PIN : constant L298N_MDM.Pin_D := 6;
+   MDM_SPD_PIN : constant L298N_MDM.Pin_A := 0;
+   
+   --------------------Ultra Sonic------
+   HC_LEFT_TRIG : constant HCSR04.Pin := 3;
+   HC_LEFT_ECHO : constant HCSR04.Pin := 4; --Shared echo
+   
+   HC_RIGHT_TRIG : constant HCSR04.Pin := 2;
+   HC_RIGHT_EHCO : constant HCSR04.Pin := 4; --Shared echo
+   
+   ECHOHANDLER_GPTIOTE_CHANNEL : constant Integer := 2;
+   
+   
+   --------------Periods----------------
+   
+   MOVE_PERIOD       : constant Time_Span := Milliseconds(4); --orginal 8
+   MEASURE_PERIOD    : constant Time_Span := Milliseconds(16); --orginal 16
+   CONTROLLER_PERIOD : constant Time_Span := Milliseconds(8); --orginal 8 but 4 works
+   
+   
+   -------------Move Settings-----------
+   
+   PROBE_DEBOUNCE : constant Time_Span := Milliseconds(550); --600 is really nice acctually.
+   PROBE_START_DELAY : constant Time_Span := Milliseconds(256); 
+   PROBE_SWITCH_DIR : constant Time_Span := Milliseconds(450);
+   MIN_DIFF : constant Float := 1.85;
+   
+   
+   -------------------------------------
+   
+   
+   
+   
    -- Shared data --
    type key_info is record
       distance_left, distance_right, distance_dif, min_dist : float;
