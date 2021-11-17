@@ -7,6 +7,7 @@ with MicroBit.Console;
 with nRF.GPIO.Tasks_And_Events;
 
 
+
 --with Microbit.PinInterrupt; --our interrupt package
 With HCSR04;                --our ultra-sonic package
 with L298N_MDM;             --our motor controller package
@@ -24,8 +25,8 @@ package brain is
    ----Configuration Constants-----------
    
    --------------Speed configurations----
-   TRACK_MODE_SPEED : constant L298N_MDM.speedControl := 700;
-   PROBE_MODE_SPEED : constant L298N_MDM.speedControl := 500;
+   TRACK_MODE_SPEED : constant L298N_MDM.speedControl := 1023; --Default 700
+   PROBE_MODE_SPEED : constant L298N_MDM.speedControl := 1023; --Default 500
    NO_SPEED         : constant L298N_MDM.speedControl := 0;
    
    
@@ -43,7 +44,7 @@ package brain is
    HC_RIGHT_TRIG : constant HCSR04.Pin := 2;
    HC_RIGHT_EHCO : constant HCSR04.Pin := 4; --Shared echo
    
-   ECHOHANDLER_GPTIOTE_CHANNEL : constant Integer := 2;
+   ECHOHANDLER_GPTIOTE_CHANNEL : constant nRF.GPIO.Tasks_And_Events.GPIOTE_Channel := 2;
    
    
    --------------Periods----------------
@@ -59,8 +60,10 @@ package brain is
    PROBE_START_DELAY : constant Time_Span := Milliseconds(256); 
    PROBE_SWITCH_DIR : constant Time_Span := Milliseconds(450);
    MIN_DIFF : constant Float := 1.85;
-   
-   
+   L298N_OPERATION_FREQ : constant Natural := 20_000; --20kHZ from data sheet
+   MICROSECONDS_IN_A_SECOND : constant Natural := 10**6;
+   --ANALOG_PERIOD_US : constant Natural := MICROSECONDS_IN_A_SECOND/L298N_OPERATION_FREQ; 
+   ANALOG_PERIOD_US : constant Natural := 20_000; 
    -------------------------------------
    
    

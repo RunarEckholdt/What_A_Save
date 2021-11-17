@@ -36,7 +36,7 @@ package body brain is
       
       -- scheduling management --
       last     : Time := Clock;
-      T_period : constant Time_Span := Milliseconds (MEASURE_PERIOD); 
+      T_period : constant Time_Span := MEASURE_PERIOD; 
       next_eye : eye := left;
       
 
@@ -87,7 +87,7 @@ package body brain is
       bd : key_info;
       -- scheduling management --
       last     : Time := Clock;
-      T_period : constant Time_Span := Milliseconds (CONTROLLER_PERIOD); 
+      T_period : constant Time_Span := CONTROLLER_PERIOD; 
 
    begin
       loop  
@@ -139,7 +139,7 @@ package body brain is
       wheels.IN_1 := MDM_IN1_PIN;  
       wheels.IN_2 := MDM_IN2_PIN;  
       wheels.SPD_1 := MDM_SPD_PIN; --analog pwm
-      Set_Analog_Period_Us(20_000); --20kHZ from data sheet
+      Set_Analog_Period_Us(ANALOG_PERIOD_US); 
 
       
       loop      

@@ -8,3 +8,5 @@ src/testmain.adb
 
 # Ada Library Information
 *.ali
+
+whatasave-loc.xml
