@@ -8,6 +8,7 @@ with nRF.Events;
 with nRF.GPIO.Tasks_And_Events;
 with Ada.Synchronous_Task_Control;
 with System;
+with timeout;
 
 --https://create.arduino.cc/projecthub/abdularbi17/ultrasonic-sensor-hc-sr04-with-arduino-tutorial-327ff6
 
@@ -20,7 +21,7 @@ package HCSR04 is
 
    protected EchoHandlerInterface is
 
-      entry Wait(WaitTime: out Ada.Real_Time.Time);
+      entry Wait;
 
 
       procedure EchoHandler with Attach_Handler => Ada.Interrupts.Names.GPIOTE_Interrupt;
