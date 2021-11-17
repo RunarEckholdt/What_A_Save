@@ -20,7 +20,8 @@ package HCSR04 is
 
    protected EchoHandlerInterface is
 
-      entry Wait;
+      entry Wait(WaitTime: out Ada.Real_Time.Time);
+
 
       procedure EchoHandler with Attach_Handler => Ada.Interrupts.Names.GPIOTE_Interrupt;
       pragma Interrupt_Priority (253); --Priority 3
@@ -29,9 +30,10 @@ package HCSR04 is
    private
       released : Boolean := False;
       evtType : nRF.Event_Type;
+      Timeout_en : Boolean := False;
+      Timeout: Ada.Real_Time.Time;
+
    end EchoHandlerInterface;
-
-
 
 
    type HCSR04 is record
