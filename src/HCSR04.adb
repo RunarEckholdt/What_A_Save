@@ -10,11 +10,11 @@ package body HCSR04 is
          --timeout := Ada.Real_Time.Time;
       end Wait;
 
-      procedure SetMaxTime(WaitTime: Ada.Real_Time.Time) is
-      begin
-         Timeout:= WaitTime;
-         Released := False;
-      end SetMaxTime;
+      --  procedure SetMaxTime(WaitTime: Ada.Real_Time.Time) is
+      --  begin
+      --     Timeout:= WaitTime;
+      --     Released := False;
+      --  end SetMaxTime;
 
 
 
@@ -42,17 +42,7 @@ package body HCSR04 is
 
   end EchoHandlerInterface;
 
-      --  task Timer;
-      --     task body Timer is
-      --        T: Ada.Real_Time.Time;
-      --     begin
-      --        loop
-      --           EchoHandlerInterface.Wait;
-      --           delay until T;
-      --           PO.TooLate;
-      --        end loop;
-      --
-      --     end Timer;
+
    procedure initializeInterrupt(hc : in HCSR04;channel : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel) is
    evtType : nRF.Event_Type;
    begin
@@ -90,31 +80,31 @@ package body HCSR04 is
    end trig;
 
    --time controll--------------------------
-   protected TimerControl is
-   entry Wait(WaitTime:  out Ada.Real_Time.Time);
-   procedure SetTime(WaitTime: Ada.Real_Time.Time);
-private
-      Timeout:Ada.Real_Time.Time;
-      outOfBoundsPeriod:Ada.Real_Time.Time_Span:=Microseconds(40);
-      Release: Boolean := False;
-   end TimerControl;
+--     protected TimerControl is
+--     entry Wait(WaitTime:  out Ada.Real_Time.Time);
+--     procedure SetTime(WaitTime: Ada.Real_Time.Time);
+--  private
+--        Timeout:Ada.Real_Time.Time;
+--        outOfBoundsPeriod:Ada.Real_Time.Time_Span:=Microseconds(40);
+--        Release: Boolean := False;
+--     end TimerControl;
 
-protected body TimerControl is
-   entry Wait(WaitTime: out Ada.Real_Time.Time) when Release is
-      begin
-         --if(WaitTime - Ada.Real_Time.Time>outOfBoundsPeriod) then
-
-      WaitTime:= Timeout;
-      Release := False;
-        -- end if;
-      end Wait;
-
-   procedure SetTime(WaitTime: Ada.Real_Time.Time) is
-   begin
-      Timeout := WaitTime;
-      Release := True;
-      end SetTime;
-   end TimerControl;
+--  protected body TimerControl is
+--     entry Wait(WaitTime: out Ada.Real_Time.Time) when Release is
+--        begin
+--           --if(WaitTime - Ada.Real_Time.Time>outOfBoundsPeriod) then
+--
+--        WaitTime:= Timeout;
+--        Release := False;
+--          -- end if;
+--        end Wait;
+   --
+   --  procedure SetTime(WaitTime: Ada.Real_Time.Time) is
+   --  begin
+   --     Timeout := WaitTime;
+   --     Release := True;
+   --     end SetTime;
+   --  end TimerControl;
 
 
    --Measures the time lenght of a high pulse
@@ -122,7 +112,7 @@ protected body TimerControl is
       startT : Time;
       endT : Time;
       lastEvent : InterruptEvent := falling;
-      outOfBoundsPeriod: Ada.Real_Time.Time_Span:=Microseconds(40);
+      outOfBoundsPeriod: Ada.Real_Time.Time_Span:=Milliseconds(3); -- 3.49*10^-3 try both 3 and 4.
       --const_T : ada.Real_Time.Time_Span:= 40;
       test_var:Boolean:= false;
 
@@ -135,23 +125,21 @@ protected body TimerControl is
 
 
       startT := Clock;
-      --TimerControl.SetTime(WaitTime => outOfBoundsPeriod );
-      --  if(startT - Clock >= outOfBoundsPeriod) then
-      --     result := True;
+      timeout.TimerControl.SetTime(startT);
       EchoHandlerInterface.Wait;
-
-      --  end if;
+      --TimerControl.SetTime(WaitTime => outOfBoundsPeriod );
+      if(startT - Clock >= outOfBoundsPeriod) then
+      timeout.PO.UsedToReleaseCall;
+      end if;
       --timeout.TimerControl.Wait(WaitTime => startT);
       --timeout.PO.Call(test_var);
       --Wait signal is recieved back or module timeout
       --EchoHandlerInterface.timeout;
 
-
       endT := Clock;
       pulseTime := endT - startT;
       result := True;
-      timeout.TimerControl.SetTime(Clock);
-      timeout.PO.UsedToReleaseCall;
+
    end pulseIn;
 
 
