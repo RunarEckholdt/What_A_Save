@@ -2,18 +2,33 @@
 
 package body brain is
    
-   protected body brain_sync is 
-      procedure get_brain_data(bd : out key_info) is
+   protected body SharedData is 
+      procedure GetSharedData(sd : out KeyInfo) is
       begin
-         bd := brain_data;
-      end get_brain_data;
+         sd := data;
+      end GetSharedData;
       
       
-      procedure set_brain_data(bd : in key_info) is
+      --  procedure set_brain_data(sd : in keyInfo) is
+      --  begin
+      --     data := sd;
+      --  end set_brain_data;
+      
+      procedure SetMeasureData(sd : in KeyInfo) is
       begin
-         brain_data := bd;
-      end set_brain_data;
-   end brain_sync;
+         data.distanceLeft := sd.distanceLeft;
+         data.distanceRight := sd.distanceRight;
+      end SetMeasureData;
+      
+      procedure SetControllData(sd : in KeyInfo) is
+      begin
+         data.distanceDif := sd.distanceDif;
+         data.minDist := sd.minDist;
+         data.nextDirection := sd.nextDirection;
+         data.opMode := sd.opMode;
+      end SetControllData;
+      
+   end SharedData;
    
    
 
@@ -24,7 +39,7 @@ package body brain is
       RightEye      : HCSR04.HCSR04;
       -----------------------------
       
-      sharedData    : key_info;   
+      sd    : keyInfo;   
       periodStart   : Time := Clock; 
       periodLength  : constant Time_Span := MEASURE_PERIOD; 
       
@@ -33,7 +48,7 @@ package body brain is
       begin
          HCSR04.measure(eye, sd.distance, result);
          if (result and sd.distance < MAX_VIEW_DISTANCE) then
-            sd.distance := sd.distance * 100;
+            sd.distance := sd.distance * 100.0;
             sd.outOfBoundsCount := 0;
          else
             sd.distance := OUT_OF_BOUNDS;
@@ -57,10 +72,10 @@ package body brain is
       loop
          periodStart := Clock;
          
-         measureDistance(leftEye,  sharedData.distanceLeft);
-         measureDistance(rightEye, sharedData.distanceRight);
- 
-         brain_sync.set_brain_data(sharedData);
+         measureDistance(leftEye,  sd.distanceLeft);
+         measureDistance(rightEye, sd.distanceRight);
+         
+         SharedData.SetMeasureData(sd);
                
          delay until periodStart + periodLength;
       end loop;
@@ -69,7 +84,7 @@ package body brain is
   
    -- calculate next move --
    task body Controller is --worst computation time: 0.000030518
-      bd : key_info;
+      sd : KeyInfo;
       -- scheduling management --
       last     : Time := Clock;
       T_period : constant Time_Span := CONTROLLER_PERIOD;
@@ -79,35 +94,35 @@ package body brain is
       procedure DetermineMode is
          minOutOfBoundsCount : Natural;
       begin
-         if(bd.distance_left.outOfBoundsCount < bd.distance_right.outOfBoundsCount) then
-            minOutOfBoundsCount := bd.distance_left.outOfBoundsCount;
+         if(sd.distanceLeft.outOfBoundsCount < sd.distanceRight.outOfBoundsCount) then
+            minOutOfBoundsCount := sd.distanceLeft.outOfBoundsCount;
          else
-            minOutOfBoundsCount := bd.distance_right.outOfBoundsCount;
+            minOutOfBoundsCount := sd.distanceRight.outOfBoundsCount;
          end if;   
          
-         case bd.opMode is
+         case sd.opMode is
             when PROBE =>
                if(minOutOfBoundsCount = 0)then
-                  bd.opMode := TRACK;
+                  sd.opMode := TRACK;
                end if;
             when TRACK =>
                if(minOutOfBoundsCount >= OOB_TO_PROBE)then
-                  bd.opMode := PROBE;
+                  sd.opMode := PROBE;
                end if;
          end case;
       end DetermineMode;
       
       procedure Calculate is
       begin
-         if(bd.opMode = TRACK) then
-            if bd.distance_left > bd.distance_right then         
-               bd.min_dist := bd.distance_right;                
-               bd.distance_dif := bd.distance_left - bd.distance_right;            
-               bd.next_direction := L298N_MDM.left;        
+         if(sd.opMode = TRACK) then
+            if sd.distanceLeft.distance > sd.distanceRight.distance then         
+               sd.minDist := sd.distanceRight.distance;                
+               sd.distanceDif := sd.distanceLeft.distance - sd.distanceRight.distance;            
+               sd.nextDirection := L298N_MDM.left;        
             else         
-               bd.min_dist := bd.distance_left;        
-               bd.distance_dif := bd.distance_right - bd.distance_left;           
-               bd.next_direction := L298N_MDM.right;  
+               sd.minDist := sd.distanceLeft.distance;        
+               sd.distanceDif := sd.distanceRight.distance - sd.distanceLeft.distance;           
+               sd.nextDirection := L298N_MDM.right;  
             end if;
          end if;
       end Calculate;
@@ -115,13 +130,13 @@ package body brain is
    begin
       loop  
          last := Clock;    
-         brain_sync.get_brain_data(bd); -- fetch data --   
+         SharedData.GetSharedData(sd); -- fetch data --   
          
          DetermineMode;
          Calculate;
          
 
-         brain_sync.set_brain_data(bd); -- update data --
+         SharedData.SetControllData(sd); -- update data --
          delay until last + T_period;
       end loop;
    end Controller;
@@ -130,7 +145,7 @@ package body brain is
    -- move the keeper --
    task body Move is             --worst computation time: 0.000030518
       wheels : L298N_MDM.L298N;
-      bd : key_info;   
+      sd : KeyInfo;   
       -- scheduling management --
       last     : Time := Clock;
       T_period : constant Time_Span := MOVE_PERIOD; 
@@ -140,7 +155,7 @@ package body brain is
       difLim : constant float := MIN_DIFF;
       
       switchProbe    : constant Time_Span := PROBE_SWITCH_DIR;
-      startProbe : constant Time_Span := PROBE_START_DELAY;
+      --startProbe : constant Time_Span := PROBE_START_DELAY;
       nextProbe : Time := Clock;
       probeDir : L298N_MDM.dirId := L298N_MDM.left;
       
@@ -157,8 +172,8 @@ package body brain is
       
       procedure Tracking is
       begin
-         if(bd.next_direction /= trackDir)then
-            trackDir := bd.next_direction;
+         if(sd.nextDirection /= trackDir)then
+            trackDir := sd.nextDirection;
             L298N_MDM.move(wheels, trackDir, L298N_MDM.speedControl(TRACK_MODE_SPEED));
          end if;
       end Tracking;
@@ -198,15 +213,15 @@ package body brain is
          
          
          last := Clock;     
-         brain_sync.get_brain_data(bd); -- fetch data --
+         SharedData.GetSharedData(sd); -- fetch data --
          
          --If we are entering Probe mode
-         if(bd.opMode /= opMove and bd.opMode = PROBE)then
-            opMove := bd.opMode;
+         if(sd.opMode /= opMove and sd.opMode = PROBE)then
+            opMove := sd.opMode;
             nextDirSwitch := Clock + PROBE_DIR_SWITCH_CYCLE;
          end if;
       
-         case bd.opMode is
+         case sd.opMode is
             when PROBE =>
                Probing;
             when TRACK =>

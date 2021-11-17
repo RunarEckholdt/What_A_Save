@@ -10,7 +10,7 @@ with nRF.GPIO.Tasks_And_Events;
 
 --with Microbit.PinInterrupt; --our interrupt package
 With HCSR04;                --our ultra-sonic package
-with L298N_MDM;             --our motor controller package
+with L298N_MDM; use L298N_MDM;             --our motor controller package
 
 with LSM303AGR; use LSM303AGR;
 with MicroBit.Accelerometer;
@@ -91,7 +91,7 @@ package brain is
    
    
    -- Shared data --
-   type key_info is record
+   type keyInfo is record
       distanceLeft, distanceRight : DistanceData; 
       distanceDif, minDist        : float;
       probeDirection              : L298N_MDM.dirId;
@@ -101,12 +101,15 @@ package brain is
    end record;
    type viewRange is new Integer range 0 .. 63;
      
-   protected brain_sync is 
-      procedure set_brain_data(bd : in key_info);
-      procedure get_brain_data(bd : out key_info);
+   protected SharedData is 
+      procedure SetMeasureData(sd : in keyInfo);
+      procedure SetControllData(sd : in keyInfo);
+      --procedure setSharedData(sd : in keyInfo);
+      procedure GetSharedData(sd : out keyInfo);
+      
    private
-      brain_data : key_info;
-   end brain_sync;
+      data : keyInfo;
+   end SharedData;
    
    -- QOL-eyes --
    type eye is (left, right);
@@ -141,5 +144,5 @@ package brain is
    
    --Task responibility
    --     Measure distance with both ultrasonics
-   task Look with Priority => 3; 
+   task Measure with Priority => 3; 
 end brain;
