@@ -39,15 +39,15 @@ package body brain is
       RightEye      : HCSR04.HCSR04;
       -----------------------------
       
-      sd    : keyInfo;   
+      sd            : keyInfo;   
       periodStart   : Time := Clock; 
       periodLength  : constant Time_Span := MEASURE_PERIOD; 
       
       procedure measureDistance(eye : in HCSR04.HCSR04; sd : in out DistanceData) is
-         result   : boolean;
+         result   : boolean := false;
       begin
          HCSR04.measure(eye, sd.distance, result);
-         if (result and sd.distance < MAX_VIEW_DISTANCE) then
+         if (result = true and sd.distance < MAX_VIEW_DISTANCE) then
             sd.distance := sd.distance * 100.0;
             sd.outOfBoundsCount := 0;
          else
@@ -115,13 +115,14 @@ package body brain is
       procedure Calculate is
       begin
          if(sd.opMode = TRACK) then
-            if sd.distanceLeft.distance > sd.distanceRight.distance then         
-               sd.minDist := sd.distanceRight.distance;                
-               sd.distanceDif := sd.distanceLeft.distance - sd.distanceRight.distance;            
+            sd.distanceDif := abs(sd.distanceLeft.distance - sd.distanceRight.distance);  
+            if sd.distanceDif < MIN_DIFF then
+               sd.nextDirection := L298N_MDM.stop;
+            elsif sd.distanceLeft.distance > sd.distanceRight.distance then      -- Bot is hanging upside down, thats why it seems inverted.    
+               sd.minDist := sd.distanceRight.distance;                        
                sd.nextDirection := L298N_MDM.left;        
             else         
-               sd.minDist := sd.distanceLeft.distance;        
-               sd.distanceDif := sd.distanceRight.distance - sd.distanceLeft.distance;           
+               sd.minDist := sd.distanceLeft.distance;               
                sd.nextDirection := L298N_MDM.right;  
             end if;
          end if;
@@ -168,7 +169,8 @@ package body brain is
       
       opMove : OperationMode := PROBE;
       
-      soundOn : Boolean := False;
+      soundOn   : Boolean := False;
+      soundTime : Time    := clock;
       
       procedure Tracking is
       begin
@@ -183,15 +185,25 @@ package body brain is
          if(Clock >= nextProbe)then
             probeDir := (if probeDir = L298N_MDM.left then L298N_MDM.right else L298N_MDM.left);
             L298N_MDM.move(wheels, probeDir, L298N_MDM.speedControl(PROBE_MODE_SPEED));
-            nextProbe := Clock + PROBE_DIR_SWITCH_CYCLE;
+            
+            
+            nextProbe     := Clock + PROBE_DIR_SWITCH_CYCLE;
+            nextDirSwitch := Clock + PROBE_DEBOUNCE;
+            soundTime     := Clock + SWITCH_DIRECTION_BEEP_DURATION;
+            
+            MicroBit.Music.Play (27, MicroBit.Music.Pitch(600));
+            soundOn := True;
          elsif(abs(MicroBit.Accelerometer.Data.x) > ACCELEROMETER_SENSITIVITY and Clock > nextDirSwitch) then
             probeDir := (if probeDir = L298N_MDM.left then L298N_MDM.right else L298N_MDM.left);
             L298N_MDM.move(wheels, probeDir, L298N_MDM.speedControl(PROBE_MODE_SPEED));
+            
             nextDirSwitch := Clock + PROBE_DEBOUNCE;
-            nextProbe := Clock + PROBE_DIR_SWITCH_CYCLE;
-            MicroBit.Music.Play (27, MicroBit.Music.Pitch(700));
+            nextProbe     := Clock + PROBE_DIR_SWITCH_CYCLE;
+            soundTime     := Clock + SWITCH_DIRECTION_BEEP_DURATION;
+            
+            MicroBit.Music.Play (27, MicroBit.Music.Pitch(900));
             soundOn := True;
-         elsif(soundOn)then
+         elsif(soundOn and clock > soundTime) then
             MicroBit.Music.Play (27, rest);
             soundOn := False;
          end if;

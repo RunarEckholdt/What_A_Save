@@ -14,8 +14,7 @@ with L298N_MDM; use L298N_MDM;             --our motor controller package
 
 with LSM303AGR; use LSM303AGR;
 with MicroBit.Accelerometer;
---  with MicroBit.DisplayRT;
---  with MicroBit.DisplayRT.Symbols;
+
 
 with MicroBit.Music; use MicroBit.Music; -- for robot sounds
 
@@ -55,25 +54,25 @@ package brain is
    
    -------------Controller settings-----
    
-   OOB_TO_PROBE : constant Natural := 16; -- Amount of Out of bounds values until entering probe mode
+   OOB_TO_PROBE : constant Natural := 2; -- Amount of Out of bounds values until entering probe mode
    
    
    -------------Move Settings-----------
    
    PROBE_DEBOUNCE : constant Time_Span := Milliseconds(550); --600 is really nice acctually.
    PROBE_SWITCH_DIR : constant Time_Span := Milliseconds(450);
-   MIN_DIFF : constant Float := 1.85;
+   MIN_DIFF : constant Float := 2.15;
    L298N_OPERATION_FREQ : constant Natural := 20_000; --20kHZ from data sheet
    MICROSECONDS_IN_A_SECOND : constant Natural := 10**6;
    --ANALOG_PERIOD_US : constant Natural := MICROSECONDS_IN_A_SECOND/L298N_OPERATION_FREQ; 
    ACCELEROMETER_SENSITIVITY : constant LSM303AGR.Axis_Data := 250;
    ANALOG_PERIOD_US : constant Natural := 20_000; 
-   PROBE_DIR_SWITCH_CYCLE : constant Time_Span := Milliseconds(256);
+   PROBE_DIR_SWITCH_CYCLE : constant Time_Span := Milliseconds(500);
    
    -------------Other constants-----------
    OUT_OF_BOUNDS : constant Float := 100.0;
-   MAX_VIEW_DISTANCE : constant Float := 60.0;
-   
+   MAX_VIEW_DISTANCE : constant Float := 40.0;
+   SWITCH_DIRECTION_BEEP_DURATION : constant Time_Span := Milliseconds(75);
    
    
    --------------------------------------
