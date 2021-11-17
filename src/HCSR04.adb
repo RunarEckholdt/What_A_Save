@@ -1,41 +1,5 @@
 package body HCSR04 is
 
---     protected PO is
---     entry Call(Timeout_en: out Boolean);
---     procedure UsedToReleaseCall;
---     procedure TooLate;
---  private
---     TimeOut_T:Boolean :=False;
---        Release:Boolean :=False;
---        const_period:Ada.Real_Time.Time;
---        Timeout: Ada.Real_Time.Time;
---
---     end PO;
-
-
-
---  protected body PO is
---     procedure TooLate is
---     begin
---        if Call'Count = 1 then
---           TimeOut_T := true;
---           Release := true;
---        end if;
---     end TooLate;
---
---     procedure UsedToReleaseCall is
---     begin
---        TimeOut_T := False;
---        Release := True;
---     end UsedToReleaseCall;
---
---     entry Call(Timeout_en: out Boolean) when Release is
---     begin
---        Timeout_en := TimeOut_T;
---        Release := False;
---     end Call;
---     end PO;
-
 
    protected body EchoHandlerInterface is
 
@@ -174,7 +138,7 @@ protected body TimerControl is
       --TimerControl.SetTime(WaitTime => outOfBoundsPeriod );
       --  if(startT - Clock >= outOfBoundsPeriod) then
       --     result := True;
-       --EchoHandlerInterface.Wait(startT);
+      EchoHandlerInterface.Wait;
 
       --  end if;
       --timeout.TimerControl.Wait(WaitTime => startT);
@@ -186,8 +150,8 @@ protected body TimerControl is
       endT := Clock;
       pulseTime := endT - startT;
       result := True;
-      --timeout.TimerControl.SetTime(Clock);
-
+      timeout.TimerControl.SetTime(Clock);
+      timeout.PO.UsedToReleaseCall;
    end pulseIn;
 
 

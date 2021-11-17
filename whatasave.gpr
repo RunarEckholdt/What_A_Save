@@ -23,16 +23,16 @@ project Whatasave is
 
             when "Debug" =>
                for Main use ("main.adb", "main.adb", "main.adb");
-               for Source_Files use ("brain.adb", "brain.ads", "HCSR04.adb", "HCSR04.ads", "l298n_mdm.adb", "l298n_mdm.ads", "main.adb", "microbit-pininterrupt.adb", "microbit-pininterrupt.ads");
+               for Source_Files use ("timeout.ads","timeout.adb","brain.adb", "brain.ads", "HCSR04.adb", "HCSR04.ads", "l298n_mdm.adb", "l298n_mdm.ads", "main.adb", "microbit-pininterrupt.adb", "microbit-pininterrupt.ads");
 
             when "Production" =>
                for Main use ("main.adb");
-               for Source_Files use ("brain.adb", "brain.ads", "HCSR04.adb", "HCSR04.ads", "l298n_mdm.adb", "l298n_mdm.ads", "main.adb", "microbit-pininterrupt.adb", "microbit-pininterrupt.ads");
+               for Source_Files use ("timeout.ads","timeout.adb","brain.adb", "brain.ads", "HCSR04.adb", "HCSR04.ads", "l298n_mdm.adb", "l298n_mdm.ads", "main.adb", "microbit-pininterrupt.adb", "microbit-pininterrupt.ads");
          end case;
 
       when "Enabled" =>
          for Main use ("main.adb");
-         for Source_Files use ("brain.adb", "brain.ads", "HCSR04.adb", "HCSR04.ads", "l298n_mdm.adb", "l298n_mdm.ads", "main.adb", "microbit-pininterrupt.adb", "microbit-pininterrupt.ads");
+         for Source_Files use ("timeout.ads","timeout.adb","brain.adb", "brain.ads", "HCSR04.adb", "HCSR04.ads", "l298n_mdm.adb", "l298n_mdm.ads", "main.adb", "microbit-pininterrupt.adb", "microbit-pininterrupt.ads");
    end case;
 
    package Compiler is

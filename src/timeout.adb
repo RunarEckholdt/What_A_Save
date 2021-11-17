@@ -1,8 +1,6 @@
 package body timeout is
 
 
-
-
 protected body PO is
    procedure TooLate is
    begin
@@ -40,7 +38,7 @@ protected body TimerControl is
    end SetTime;
 end TimerControl;
 
-task Timer with Priority=>5;
+task Timer with Priority=>3;
 task body Timer is
    T:Ada.Real_Time.Time;
 begin

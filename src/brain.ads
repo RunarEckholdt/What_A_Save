@@ -5,6 +5,7 @@ with MicroBit;
 with MicroBit.IOsForTasking; use MicroBit.IOsForTasking;
 with MicroBit.Console;
 with nRF.GPIO.Tasks_And_Events;
+with timeout;
 
 
 
