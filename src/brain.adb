@@ -116,7 +116,7 @@ package body brain is
          end case;
       end DetermineMode;
       
-      procedure Calcualte is
+      procedure Calculate is
       begin
          if(bd.opMode = TRACK) then
             if bd.distance_left > bd.distance_right then         
@@ -129,7 +129,7 @@ package body brain is
                bd.next_direction := L298N_MDM.right;  
             end if;
          end if;
-      end Calcualte;
+      end Calculate;
 
    begin
       loop  
@@ -137,7 +137,7 @@ package body brain is
          brain_sync.get_brain_data(bd); -- fetch data --   
          
          DetermineMode;
-         Calcualte;
+         Calculate;
          
 
          brain_sync.set_brain_data(bd); -- update data --
@@ -153,19 +153,54 @@ package body brain is
       -- scheduling management --
       last     : Time := Clock;
       T_period : constant Time_Span := MOVE_PERIOD; 
+      trackDir : L298N_MDM.dirId := L298N_MDM.stop;
+      
       
       difLim : constant float := MIN_DIFF;
       
       switchProbe    : constant Time_Span := PROBE_SWITCH_DIR;
       startProbe : constant Time_Span := PROBE_START_DELAY;
-      
       nextProbe : Time := Clock;
       probeDir : L298N_MDM.dirId := L298N_MDM.left;
+      
+      
       probeBool : Boolean := true;
       
       nextDirSwitch : time := clock;
-      probeDebounce : constant Time_Span := PROBE_DEBOUNCE; 
-   
+      --dirSwitchCycle : constant Time_Span := PROBE_DIR_SWITCH_CYCLE;
+      --probeDebounce : constant Time_Span := PROBE_DEBOUNCE; 
+      
+      opMove : OperationMode := PROBE;
+      
+      soundOn : Boolean := False;
+      
+      procedure Tracking is
+      begin
+         if(bd.next_direction /= trackDir)then
+            trackDir := bd.next_direction;
+            L298N_MDM.move(wheels, trackDir, L298N_MDM.speedControl(TRACK_MODE_SPEED));
+         end if;
+      end Tracking;
+      
+      procedure Probing is
+      begin
+         if(Clock >= nextProbe)then
+            probeDir := (if probeDir = L298N_MDM.left then L298N_MDM.right else L298N_MDM.left);
+            L298N_MDM.move(wheels, probeDir, L298N_MDM.speedControl(PROBE_MODE_SPEED));
+            nextProbe := Clock + PROBE_DIR_SWITCH_CYCLE;
+         elsif(abs(MicroBit.Accelerometer.Data.x) > ACCELEROMETER_SENSITIVITY and Clock > nextDirSwitch) then
+            probeDir := (if probeDir = L298N_MDM.left then L298N_MDM.right else L298N_MDM.left);
+            L298N_MDM.move(wheels, probeDir, L298N_MDM.speedControl(PROBE_MODE_SPEED));
+            nextDirSwitch := Clock + PROBE_DEBOUNCE;
+            nextProbe := Clock + PROBE_DIR_SWITCH_CYCLE;
+            MicroBit.Music.Play (27, MicroBit.Music.Pitch(700));
+            soundOn := True;
+         elsif(soundOn)then
+            MicroBit.Music.Play (27, rest);
+            soundOn := False;
+         end if;
+      end Probing;
+      
       
 
    begin 
@@ -176,43 +211,62 @@ package body brain is
       Set_Analog_Period_Us(ANALOG_PERIOD_US); 
 
       
+      
+      
       loop      
+         
+         
          last := Clock;     
          brain_sync.get_brain_data(bd); -- fetch data --
          
-         if (bd.min_dist < 60.0 and bd.distance_dif > difLim) then  --If object is closer than 70 cm and difference between sensors are more than 1.5 cm; drive.
-            L298N_MDM.move(wheels, bd.next_direction, L298N_MDM.speedControl(TRACK_MODE_SPEED));
-            --MicroBit.Music.Play (27, MicroBit.Music.Pitch(bd.min_dist*100));
-            nextProbe := Clock + startProbe;
-
-
-         elsif (bd.min_dist > 60.0 and Clock > nextProbe) then
-            if (abs(MicroBit.Accelerometer.Data.x) > 250 and clock > nextDirSwitch) then
-               
-               if (probeBool) then
-                  MicroBit.Music.Play (27, MicroBit.Music.Pitch(700));
-                  probeDir := L298N_MDM.right;
-                  probeBool := false;
-                  nextDirSwitch := clock + probeDebounce;
-               elsif(probeBool = false) then
-                  MicroBit.Music.Play (27, MicroBit.Music.Pitch(500));
-                  probeDir := L298N_MDM.left;
-                  probeBool := true;
-                  nextDirSwitch := clock + probeDebounce;
-               end if;
-               
-            else
-               MicroBit.Music.Play (27, rest);
-            end if;
-            
-           
-            L298N_MDM.move(wheels, probeDir, L298N_MDM.speedControl(PROBE_MODE_SPEED));
-            
-            
-         elsif bd.distance_dif < difLim then
-            L298N_MDM.move(wheels, L298N_MDM.stop, L298N_MDM.speedControl(NO_SPEED)); 
-            --  nextProbe := Clock + startProbe;
+         --If we are entering Probe mode
+         if(bd.opMode /= opMove and bd.opMode = PROBE)then
+            opMove := bd.opMode;
+            nextDirSwitch := Clock + PROBE_DIR_SWITCH_CYCLE;
          end if;
+      
+         case bd.opMode is
+            when PROBE =>
+               Probing;
+            when TRACK =>
+               Tracking;
+         end case;
+         
+         
+         
+         --  if (bd.min_dist < 60.0 and bd.distance_dif > difLim) then  --If object is closer than 70 cm and difference between sensors are more than 1.5 cm; drive.
+         --     L298N_MDM.move(wheels, bd.next_direction, L298N_MDM.speedControl(TRACK_MODE_SPEED));
+         --     --MicroBit.Music.Play (27, MicroBit.Music.Pitch(bd.min_dist*100));
+         --     nextProbe := Clock + startProbe;
+         --  
+         --  
+         --  elsif (bd.min_dist > 60.0 and Clock > nextProbe) then
+         --     if (abs(MicroBit.Accelerometer.Data.x) > ACCELEROMETER_SENSITIVITY and clock > nextDirSwitch) then
+         --  
+         --        if (probeBool) then
+         --           MicroBit.Music.Play (27, MicroBit.Music.Pitch(700));
+         --           probeDir := L298N_MDM.right;
+         --           probeBool := false;
+         --           nextDirSwitch := clock + probeDebounce;
+         --        elsif(probeBool = false) then
+         --           MicroBit.Music.Play (27, MicroBit.Music.Pitch(500));
+         --           probeDir := L298N_MDM.left;
+         --           probeBool := true;
+         --           nextDirSwitch := clock + probeDebounce;
+         --        end if;
+         --  
+         --     else
+         --        MicroBit.Music.Play (27, rest);
+         --     end if;
+         --  
+         --  
+         --     L298N_MDM.move(wheels, probeDir, L298N_MDM.speedControl(PROBE_MODE_SPEED));
+         --  
+         --  
+         --  elsif bd.distance_dif < difLim then
+         --     L298N_MDM.move(wheels, L298N_MDM.stop, L298N_MDM.speedControl(NO_SPEED));
+         --     --  nextProbe := Clock + startProbe;
+         --  end if;
 
          delay until last + T_period;
       end loop;
