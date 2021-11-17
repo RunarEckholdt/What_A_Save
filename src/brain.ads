@@ -61,13 +61,14 @@ package brain is
    -------------Move Settings-----------
    
    PROBE_DEBOUNCE : constant Time_Span := Milliseconds(550); --600 is really nice acctually.
-   PROBE_START_DELAY : constant Time_Span := Milliseconds(256); 
    PROBE_SWITCH_DIR : constant Time_Span := Milliseconds(450);
    MIN_DIFF : constant Float := 1.85;
    L298N_OPERATION_FREQ : constant Natural := 20_000; --20kHZ from data sheet
    MICROSECONDS_IN_A_SECOND : constant Natural := 10**6;
    --ANALOG_PERIOD_US : constant Natural := MICROSECONDS_IN_A_SECOND/L298N_OPERATION_FREQ; 
+   ACCELEROMETER_SENSITIVITY : constant LSM303AGR.Axis_Data := 250;
    ANALOG_PERIOD_US : constant Natural := 20_000; 
+   PROBE_DIR_SWITCH_CYCLE : constant Time_Span := Milliseconds(256);
    
    -------------Other constants-----------
    OUT_OF_BOUNDS : constant Float := 100.0;
