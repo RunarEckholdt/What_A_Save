@@ -53,6 +53,10 @@ package brain is
    MEASURE_PERIOD    : constant Time_Span := Milliseconds(16); --orginal 16
    CONTROLLER_PERIOD : constant Time_Span := Milliseconds(8); --orginal 8 but 4 works
    
+   -------------Controller settings-----
+   
+   OOB_TO_PROBE : constant Natural := 16; -- Amount of Out of bounds values until entering probe mode
+   
    
    -------------Move Settings-----------
    
@@ -64,17 +68,35 @@ package brain is
    MICROSECONDS_IN_A_SECOND : constant Natural := 10**6;
    --ANALOG_PERIOD_US : constant Natural := MICROSECONDS_IN_A_SECOND/L298N_OPERATION_FREQ; 
    ANALOG_PERIOD_US : constant Natural := 20_000; 
-   -------------------------------------
+   
+   -------------Other constants-----------
+   OUT_OF_BOUNDS : constant Float := 100.0;
+   MAX_VIEW_DISTANCE : constant Float := 60.0;
    
    
+   
+   --------------------------------------
+  
+   type OperationMode is (TRACK, PROBE);
+   
+   
+   type DistanceData is record
+      distance : Float := 0;
+      outOfBoundsCount : Natural := 0;
+   end record;
+   
+  
+    
    
    
    -- Shared data --
    type key_info is record
-      distance_left, distance_right, distance_dif, min_dist : float;
-      probe_direction: L298N_MDM.dirId;
-      next_direction : L298N_MDM.dirId;
-      next_speed     : L298N_MDM.speedControl;     
+      distance_left, distance_right : DistanceData; 
+      distance_dif, min_dist        : float;
+      probe_direction               : L298N_MDM.dirId;
+      next_direction                : L298N_MDM.dirId;
+      next_speed                    : L298N_MDM.speedControl;     
+      opMode                        : OperationMode := PROBE;
    end record;
    type viewRange is new Integer range 0 .. 63;
      
@@ -90,7 +112,33 @@ package brain is
    type dist is (lock_on, adjust, OOB);
    
    -- task set --
+   
+   
+   --Task Responsibility
+   --     Probe:
+   --           Change probe direction based on time or acelerometer data
+   --     Track:
+   --           If new direction is applied, change to it
    task Move with Priority => 1;
-   task Think with Priority => 2;
+   
+   
+   
+   --Task Responsibility--
+   --     Determine mode:
+   --                    Track
+   --                    Probe
+   --     Calculate:
+   --               Track:
+   --                     Direction
+   --                     Speed?
+   --                     Distance diff
+   --                     Min distance
+   --               Probe:
+   --                     None
+   task Controller with Priority => 2;
+   
+   
+   --Task responibility
+   --     Measure distance with both ultrasonics
    task Look with Priority => 3; 
 end brain;

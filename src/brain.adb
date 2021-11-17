@@ -58,18 +58,22 @@ package body brain is
          last := Clock;
          
          HCSR04.measure(left_eye, dis_left, result);
-         if (result) then
-            bd.distance_left := dis_left*100.0;
+         if (result and dis_left < MAX_VIEW_DISTANCE) then
+            bd.distance_left.distance := dis_left*100.0;
+            bd.distance_left.outOfBoundsCount := 0;
          else
-            bd.distance_left := 100.0;
+            bd.distance_left.distance := OUT_OF_BOUNDS;
+            bd.distance_left.outOfBoundsCount := bd.distance_left.outOfBoundsCount + 1;
          end if;
             --  bd.distance_left := integer(float'rounding(dis_left*100.0));
          
          HCSR04.measure(right_eye, dis_right, result);
-         if (result) then
-            bd.distance_right := dis_right*100.0; 
+         if (result and dis_right < MAX_VIEW_DISTANCE) then
+            bd.distance_right.distance := dis_right*100.0; 
+            bd.distance_right.outOfBoundsCount := 0;
          else
-            bd.distance_right := 100.0;
+            bd.distance_right.distance := OUT_OF_BOUNDS;
+            bd.distance_right.outOfBoundsCount := bd.distance_right.outOfBoundsCount + 1;
          end if; 
          --  bd.distance_right := integer(float'rounding(dis_right*100.0));
             
@@ -81,35 +85,65 @@ package body brain is
       end loop;
    end Look;
    
-   
+  
    -- calculate next move --
-   task body Think is --worst computation time: 0.000030518
+   task body Controller is --worst computation time: 0.000030518
       bd : key_info;
       -- scheduling management --
       last     : Time := Clock;
-      T_period : constant Time_Span := CONTROLLER_PERIOD; 
+      T_period : constant Time_Span := CONTROLLER_PERIOD;
+      
+      
+      
+      procedure DetermineMode is
+         minOutOfBoundsCount : Natural;
+      begin
+         if(bd.distance_left.outOfBoundsCount < bd.distance_right.outOfBoundsCount) then
+            minOutOfBoundsCount := bd.distance_left.outOfBoundsCount;
+         else
+            minOutOfBoundsCount := bd.distance_right.outOfBoundsCount;
+         end if;   
+         
+         case bd.opMode is
+            when PROBE =>
+               if(minOutOfBoundsCount = 0)then
+                  bd.opMode := TRACK;
+               end if;
+            when TRACK =>
+               if(minOutOfBoundsCount >= OOB_TO_PROBE)then
+                  bd.opMode := PROBE;
+               end if;
+         end case;
+      end DetermineMode;
+      
+      procedure Calcualte is
+      begin
+         if(bd.opMode = TRACK) then
+            if bd.distance_left > bd.distance_right then         
+               bd.min_dist := bd.distance_right;                
+               bd.distance_dif := bd.distance_left - bd.distance_right;            
+               bd.next_direction := L298N_MDM.left;        
+            else         
+               bd.min_dist := bd.distance_left;        
+               bd.distance_dif := bd.distance_right - bd.distance_left;           
+               bd.next_direction := L298N_MDM.right;  
+            end if;
+         end if;
+      end Calcualte;
 
    begin
       loop  
          last := Clock;    
          brain_sync.get_brain_data(bd); -- fetch data --   
          
-       
-         if bd.distance_left > bd.distance_right then         
-            bd.min_dist := bd.distance_right;                
-            bd.distance_dif := bd.distance_left - bd.distance_right;            
-            bd.next_direction := L298N_MDM.left;        
-         else         
-            bd.min_dist := bd.distance_left;        
-            bd.distance_dif := bd.distance_right - bd.distance_left;           
-            bd.next_direction := L298N_MDM.right;  
-         end if;
+         DetermineMode;
+         Calcualte;
          
 
          brain_sync.set_brain_data(bd); -- update data --
          delay until last + T_period;
       end loop;
-   end think;
+   end Controller;
    
    
    -- move the keeper --
