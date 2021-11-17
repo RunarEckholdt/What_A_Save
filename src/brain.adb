@@ -8,12 +8,6 @@ package body brain is
          sd := data;
       end GetSharedData;
       
-      
-      --  procedure set_brain_data(sd : in keyInfo) is
-      --  begin
-      --     data := sd;
-      --  end set_brain_data;
-      
       procedure SetMeasureData(sd : in KeyInfo) is
       begin
          data.distanceLeft := sd.distanceLeft;
@@ -85,13 +79,10 @@ package body brain is
    -- calculate next move --
    task body Controller is --worst computation time: 0.000030518
       sd : KeyInfo;
-      -- scheduling management --
-      last     : Time := Clock;
-      T_period : constant Time_Span := CONTROLLER_PERIOD;
-      
-      opmod : OperationMode := PROBE;
-      
-      
+      periodStart   : Time := Clock; 
+      periodLength  : constant Time_Span := CONTROLLER_PERIOD;
+
+
       procedure DetermineMode is
          minOutOfBoundsCount : Natural;
          
@@ -132,15 +123,14 @@ package body brain is
 
    begin
       loop  
-         last := Clock;    
+         periodStart := Clock;    
          SharedData.GetSharedData(sd); -- fetch data --   
          
          DetermineMode;
          Calculate;
-         
-
+  
          SharedData.SetControllData(sd); -- update data --
-         delay until last + T_period;
+         delay until periodStart + periodLength;
       end loop;
    end Controller;
    
@@ -150,21 +140,17 @@ package body brain is
       wheels : L298N_MDM.L298N;
       sd : KeyInfo;   
       -- scheduling management --
-      last     : Time := Clock;
-      T_period : constant Time_Span := MOVE_PERIOD; 
+      periodStart     : Time := Clock;
+      periodLength: constant Time_Span := MOVE_PERIOD; 
       trackDir : L298N_MDM.dirId := L298N_MDM.stop;
       
       
       difLim : constant float := MIN_DIFF;
       
-      switchProbe    : constant Time_Span := PROBE_SWITCH_DIR;
-      --startProbe : constant Time_Span := PROBE_START_DELAY;
+      switchProbe    : constant Time_Span := PROBE_DIR_SWITCH_CYCLE;
       nextProbe : Time := Clock;
       probeDir : L298N_MDM.dirId := L298N_MDM.left;
-      
-      
-      probeBool : Boolean := true;
-      
+
       nextDirSwitch : time := clock;
       --dirSwitchCycle : constant Time_Span := PROBE_DIR_SWITCH_CYCLE;
       --probeDebounce : constant Time_Span := PROBE_DEBOUNCE; 
@@ -205,14 +191,13 @@ package body brain is
             
             MicroBit.Music.Play (27, MicroBit.Music.Pitch(900));
             soundOn := True;
-         elsif(soundOn and clock > soundTime) then
+         end if;
+         if(soundOn and clock > soundTime) then
             MicroBit.Music.Play (27, rest);
             soundOn := False;
          end if;
       end Probing;
       
-      
-
    begin 
       
       wheels.IN_1 := MDM_IN1_PIN;  
@@ -220,13 +205,10 @@ package body brain is
       wheels.SPD_1 := MDM_SPD_PIN; --analog pwm
       Set_Analog_Period_Us(ANALOG_PERIOD_US); 
 
-      
-      
-      
+
       loop      
          
-         
-         last := Clock;     
+         periodStart := Clock;     
          SharedData.GetSharedData(sd); -- fetch data --
          
          --If we are entering Probe mode
@@ -241,44 +223,8 @@ package body brain is
             when TRACK =>
                Tracking;
          end case;
-         
-         
-         
-         --  if (bd.min_dist < 60.0 and bd.distance_dif > difLim) then  --If object is closer than 70 cm and difference between sensors are more than 1.5 cm; drive.
-         --     L298N_MDM.move(wheels, bd.next_direction, L298N_MDM.speedControl(TRACK_MODE_SPEED));
-         --     --MicroBit.Music.Play (27, MicroBit.Music.Pitch(bd.min_dist*100));
-         --     nextProbe := Clock + startProbe;
-         --  
-         --  
-         --  elsif (bd.min_dist > 60.0 and Clock > nextProbe) then
-         --     if (abs(MicroBit.Accelerometer.Data.x) > ACCELEROMETER_SENSITIVITY and clock > nextDirSwitch) then
-         --  
-         --        if (probeBool) then
-         --           MicroBit.Music.Play (27, MicroBit.Music.Pitch(700));
-         --           probeDir := L298N_MDM.right;
-         --           probeBool := false;
-         --           nextDirSwitch := clock + probeDebounce;
-         --        elsif(probeBool = false) then
-         --           MicroBit.Music.Play (27, MicroBit.Music.Pitch(500));
-         --           probeDir := L298N_MDM.left;
-         --           probeBool := true;
-         --           nextDirSwitch := clock + probeDebounce;
-         --        end if;
-         --  
-         --     else
-         --        MicroBit.Music.Play (27, rest);
-         --     end if;
-         --  
-         --  
-         --     L298N_MDM.move(wheels, probeDir, L298N_MDM.speedControl(PROBE_MODE_SPEED));
-         --  
-         --  
-         --  elsif bd.distance_dif < difLim then
-         --     L298N_MDM.move(wheels, L298N_MDM.stop, L298N_MDM.speedControl(NO_SPEED));
-         --     --  nextProbe := Clock + startProbe;
-         --  end if;
 
-         delay until last + T_period;
+         delay until periodStart + periodLength;
       end loop;
    end Move;
 

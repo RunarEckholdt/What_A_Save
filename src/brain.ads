@@ -24,8 +24,8 @@ package brain is
    ----Configuration Constants-----------
    
    --------------Speed configurations----
-   TRACK_MODE_SPEED : constant L298N_MDM.speedControl := 1023; --Default 700
-   PROBE_MODE_SPEED : constant L298N_MDM.speedControl := 1023; --Default 500
+   TRACK_MODE_SPEED : constant L298N_MDM.speedControl := 900; --Default 700
+   PROBE_MODE_SPEED : constant L298N_MDM.speedControl := 500; --Default 500
    NO_SPEED         : constant L298N_MDM.speedControl := 0;
    
    
@@ -54,24 +54,24 @@ package brain is
    
    -------------Controller settings-----
    
-   OOB_TO_PROBE : constant Natural := 2; -- Amount of Out of bounds values until entering probe mode
+   OOB_TO_PROBE : constant Natural := 16; -- Amount of Out of bounds values until entering probe mode
    
    
    -------------Move Settings-----------
    
    PROBE_DEBOUNCE : constant Time_Span := Milliseconds(550); --600 is really nice acctually.
-   PROBE_SWITCH_DIR : constant Time_Span := Milliseconds(750);
+   PROBE_DIR_SWITCH_CYCLE : constant Time_Span := Milliseconds(1200);
    MIN_DIFF : constant Float := 2.15;
    L298N_OPERATION_FREQ : constant Natural := 20_000; --20kHZ from data sheet
    MICROSECONDS_IN_A_SECOND : constant Natural := 10**6;
    --ANALOG_PERIOD_US : constant Natural := MICROSECONDS_IN_A_SECOND/L298N_OPERATION_FREQ; 
    ACCELEROMETER_SENSITIVITY : constant LSM303AGR.Axis_Data := 250;
    ANALOG_PERIOD_US : constant Natural := 20_000; 
-   PROBE_DIR_SWITCH_CYCLE : constant Time_Span := Milliseconds(500);
+  
    
    -------------Other constants-----------
    OUT_OF_BOUNDS     : constant Float := 100.0;
-   MAX_VIEW_DISTANCE : constant Float := 60.0;
+   MAX_VIEW_DISTANCE : constant Float := 40.0;
    SWITCH_DIRECTION_BEEP_DURATION : constant Time_Span := Milliseconds(75);
    
    
