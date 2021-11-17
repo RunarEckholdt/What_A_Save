@@ -47,8 +47,8 @@ package body brain is
          result   : boolean := false;
       begin
          HCSR04.measure(eye, sd.distance, result);
-         if (result = true and sd.distance < MAX_VIEW_DISTANCE) then
-            sd.distance := sd.distance * 100.0;
+         sd.distance := sd.distance * 100.0;
+         if (result and sd.distance < MAX_VIEW_DISTANCE) then
             sd.outOfBoundsCount := 0;
          else
             sd.distance := OUT_OF_BOUNDS;
@@ -89,24 +89,26 @@ package body brain is
       last     : Time := Clock;
       T_period : constant Time_Span := CONTROLLER_PERIOD;
       
+      opmod : OperationMode := PROBE;
       
       
       procedure DetermineMode is
          minOutOfBoundsCount : Natural;
+         
       begin
          if(sd.distanceLeft.outOfBoundsCount < sd.distanceRight.outOfBoundsCount) then
             minOutOfBoundsCount := sd.distanceLeft.outOfBoundsCount;
          else
             minOutOfBoundsCount := sd.distanceRight.outOfBoundsCount;
-         end if;   
+         end if;  
          
          case sd.opMode is
             when PROBE =>
-               if(minOutOfBoundsCount = 0)then
+               if (minOutOfBoundsCount = 0) then
                   sd.opMode := TRACK;
                end if;
             when TRACK =>
-               if(minOutOfBoundsCount >= OOB_TO_PROBE)then
+               if (minOutOfBoundsCount >= OOB_TO_PROBE) then
                   sd.opMode := PROBE;
                end if;
          end case;

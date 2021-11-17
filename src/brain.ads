@@ -60,7 +60,7 @@ package brain is
    -------------Move Settings-----------
    
    PROBE_DEBOUNCE : constant Time_Span := Milliseconds(550); --600 is really nice acctually.
-   PROBE_SWITCH_DIR : constant Time_Span := Milliseconds(450);
+   PROBE_SWITCH_DIR : constant Time_Span := Milliseconds(750);
    MIN_DIFF : constant Float := 2.15;
    L298N_OPERATION_FREQ : constant Natural := 20_000; --20kHZ from data sheet
    MICROSECONDS_IN_A_SECOND : constant Natural := 10**6;
@@ -70,8 +70,8 @@ package brain is
    PROBE_DIR_SWITCH_CYCLE : constant Time_Span := Milliseconds(500);
    
    -------------Other constants-----------
-   OUT_OF_BOUNDS : constant Float := 100.0;
-   MAX_VIEW_DISTANCE : constant Float := 40.0;
+   OUT_OF_BOUNDS     : constant Float := 100.0;
+   MAX_VIEW_DISTANCE : constant Float := 60.0;
    SWITCH_DIRECTION_BEEP_DURATION : constant Time_Span := Milliseconds(75);
    
    
