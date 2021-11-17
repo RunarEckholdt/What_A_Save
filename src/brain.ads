@@ -81,7 +81,7 @@ package brain is
    
    
    type DistanceData is record
-      distance : Float := 0;
+      distance : Float := 0.0;
       outOfBoundsCount : Natural := 0;
    end record;
    
@@ -91,12 +91,12 @@ package brain is
    
    -- Shared data --
    type key_info is record
-      distance_left, distance_right : DistanceData; 
-      distance_dif, min_dist        : float;
-      probe_direction               : L298N_MDM.dirId;
-      next_direction                : L298N_MDM.dirId;
-      next_speed                    : L298N_MDM.speedControl;     
-      opMode                        : OperationMode := PROBE;
+      distanceLeft, distanceRight : DistanceData; 
+      distanceDif, minDist        : float;
+      probeDirection              : L298N_MDM.dirId;
+      nextDirection               : L298N_MDM.dirId;
+      nextSpeed                   : L298N_MDM.speedControl;     
+      opMode                      : OperationMode := PROBE;
    end record;
    type viewRange is new Integer range 0 .. 63;
      

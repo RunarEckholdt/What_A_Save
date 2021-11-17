@@ -18,72 +18,53 @@ package body brain is
    
 
    -- look for target --
-   task body Look is  -- 0.007 worst?
-      -- task components --
-      -- left eye --
-      left_eye  : HCSR04.HCSR04;
-      dis_left : float;  
-      -- right eye --
-      right_eye : HCSR04.HCSR04;
-      dis_right : float;
-      --
+   task body Measure is  -- 0.007 worst?
+      ----- HCSR-04 SENSORS -------
+      leftEye       : HCSR04.HCSR04;
+      RightEye      : HCSR04.HCSR04;
+      -----------------------------
       
+      sharedData    : key_info;   
+      periodStart   : Time := Clock; 
+      periodLength  : constant Time_Span := MEASURE_PERIOD; 
       
-        
-      -- other --
-      result : boolean;
-      bd : key_info;
-      
-      -- scheduling management --
-      last     : Time := Clock;
-      T_period : constant Time_Span := MEASURE_PERIOD; 
-      next_eye : eye := left;
-      
+      procedure measureDistance(eye : in HCSR04.HCSR04; sd : in out DistanceData) is
+         result   : boolean;
+      begin
+         HCSR04.measure(eye, sd.distance, result);
+         if (result and sd.distance < MAX_VIEW_DISTANCE) then
+            sd.distance := sd.distance * 100;
+            sd.outOfBoundsCount := 0;
+         else
+            sd.distance := OUT_OF_BOUNDS;
+            sd.outOfBoundsCount := sd.outOfBoundsCount + 1;
+         end if;
+      end measureDistance;
 
-
-      
    begin
+     
+      -- TRIGGER PINS --
+      rightEye.trig := HC_RIGHT_TRIG; 
+      leftEye.trig  := HC_LEFT_TRIG; 
       
+      -- ECHO PINS --
+      leftEye.echo  := HC_LEFT_ECHO; 
+      rightEye.echo := HC_RIGHT_EHCO; 
       
-      -- port mapping --
-      right_eye.trig := HC_RIGHT_TRIG; 
-      left_eye.trig  := HC_LEFT_TRIG; 
-      
-      left_eye.echo  := HC_LEFT_ECHO; 
-      right_eye.echo := HC_RIGHT_EHCO; 
-      
-      HCSR04.initializeInterrupt(left_eye,ECHOHANDLER_GPTIOTE_CHANNEL);
+      -- INITIALIZE INTERRUPT --
+      HCSR04.initializeInterrupt(leftEye, ECHOHANDLER_GPTIOTE_CHANNEL); -- both sensors share the same ECHO pin --
       
       loop
-         last := Clock;
+         periodStart := Clock;
          
-         HCSR04.measure(left_eye, dis_left, result);
-         if (result and dis_left < MAX_VIEW_DISTANCE) then
-            bd.distance_left.distance := dis_left*100.0;
-            bd.distance_left.outOfBoundsCount := 0;
-         else
-            bd.distance_left.distance := OUT_OF_BOUNDS;
-            bd.distance_left.outOfBoundsCount := bd.distance_left.outOfBoundsCount + 1;
-         end if;
-            --  bd.distance_left := integer(float'rounding(dis_left*100.0));
-         
-         HCSR04.measure(right_eye, dis_right, result);
-         if (result and dis_right < MAX_VIEW_DISTANCE) then
-            bd.distance_right.distance := dis_right*100.0; 
-            bd.distance_right.outOfBoundsCount := 0;
-         else
-            bd.distance_right.distance := OUT_OF_BOUNDS;
-            bd.distance_right.outOfBoundsCount := bd.distance_right.outOfBoundsCount + 1;
-         end if; 
-         --  bd.distance_right := integer(float'rounding(dis_right*100.0));
-            
-         
-         brain_sync.set_brain_data(bd); -- update data --
-         
-         
-         delay until last + T_period;
+         measureDistance(leftEye,  sharedData.distanceLeft);
+         measureDistance(rightEye, sharedData.distanceRight);
+ 
+         brain_sync.set_brain_data(sharedData);
+               
+         delay until periodStart + periodLength;
       end loop;
-   end Look;
+   end Measure;
    
   
    -- calculate next move --
