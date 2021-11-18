@@ -32,7 +32,7 @@ package HCSR04 is
    end EchoHandlerInterface;
 
 
-
+   type UnitOfMeasure is (METER, CM, MM);
 
    type HCSR04 is record
       echo, trig : Pin;
@@ -40,7 +40,7 @@ package HCSR04 is
 
 
    procedure initializeInterrupt(hc : in HCSR04; channel : in nRF.GPIO.Tasks_And_Events.GPIOTE_Channel);
-   procedure measure(hc : in HCSR04; distance : out Float; result : out Boolean);
+   procedure measure(hc : in HCSR04; distance : out Float; result : out Boolean; uom : in UnitOfMeasure := METER);
    procedure trig(hc : in HCSR04);
    procedure pulseIn(hc : in HCSR04; pulseTime : out Time_Span; result : out Boolean);
 

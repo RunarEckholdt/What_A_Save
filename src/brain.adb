@@ -40,8 +40,8 @@ package body brain is
       procedure measureDistance(eye : in HCSR04.HCSR04; sd : in out DistanceData) is
          result   : boolean := false;
       begin
-         HCSR04.measure(eye, sd.distance, result);
-         sd.distance := sd.distance * 100.0;
+         HCSR04.measure(eye, sd.distance, result,HCSR04.CM);
+         --sd.distance := sd.distance * 100.0;
          if (result and sd.distance < MAX_VIEW_DISTANCE) then
             sd.outOfBoundsCount := 0;
          else

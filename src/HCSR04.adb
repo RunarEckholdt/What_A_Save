@@ -50,7 +50,7 @@ package body HCSR04 is
 
 
    --Measures the distance in meters
-   procedure measure(hc : in HCSR04 ; distance : out Float; result : out Boolean) is
+   procedure measure(hc : in HCSR04; distance : out Float; result : out Boolean; uom : in UnitOfMeasure := METER) is
       timeS : Time_Span;
       timeSFl : Float;
       speedOfSound : constant Float := 343.0;
@@ -60,6 +60,15 @@ package body HCSR04 is
       if(result) then
          timeSFl := Float(To_Duration(timeS));
          distance := (timeSFl/2.0) * speedOfSound;
+
+         case uom is
+            when CM =>
+               distance := distance * 100.0;
+            when MM =>
+               distance := distance * 1000.0;
+            when METER =>
+               null;
+         end case;
       else
          distance := -1.0;
       end if;
