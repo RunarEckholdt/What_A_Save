@@ -25,8 +25,8 @@ package brain is
    
    --------------Speed configurations----
    TRACK_MODE_SPEED : constant L298N_MDM.speedControl := 900; --Default 700
-   TRACK_SCENT_SPEED : constant L298N_MDM.speedControl := 700;
-   PROBE_MODE_SPEED : constant L298N_MDM.speedControl := 500; --Default 500
+   TRACK_SCENT_SPEED : constant L298N_MDM.speedControl := 500;
+   PROBE_MODE_SPEED : constant L298N_MDM.speedControl := 400; --Default 500
    
    NO_SPEED         : constant L298N_MDM.speedControl := 0;
    
@@ -56,7 +56,7 @@ package brain is
    
    -------------Controller settings-----
    
-   OOB_TO_PROBE : constant Natural := 16; -- Amount of Out of bounds values until entering probe mode
+   OOB_TO_PROBE : constant Natural := 32; -- Amount of Out of bounds values until entering probe mode
    
    
    -------------Move Settings-----------

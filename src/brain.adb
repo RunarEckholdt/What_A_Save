@@ -84,6 +84,8 @@ package body brain is
       periodStart   : Time := Clock; 
       periodLength  : constant Time_Span := CONTROLLER_PERIOD;
       ls : LastSpotted;
+      
+      --soundOn : Boolean := False;
 
       procedure DetermineMode is
          minOutOfBoundsCount : Natural;
@@ -94,22 +96,33 @@ package body brain is
          else
             minOutOfBoundsCount := sd.distanceRight.outOfBoundsCount;
          end if;  
-         
-         
+         --  if(soundOn)then
+         --     --MicroBit.Music.Play(27,Rest);
+         --     soundOn := False;
+         --  end if;
          case sd.opMode is
+            
             when PROBE =>
                if (minOutOfBoundsCount = 0) then
+                  --MicroBit.Music.Play(27,400);
+                  --soundOn := True;
                   sd.opMode := TRACK;
                end if;
             when TRACK =>
                if(minOutOfBoundsCount /= 0)then
+                  --MicroBit.Music.Play(27,200);
+                  --soundOn := True;
                   sd.opMode := TRACK_SCENT;
                end if;
             when TRACK_SCENT =>
                if(minOutOfBoundsCount = 0) then
+                  --MicroBit.Music.Play(27,400);
+                  --soundOn := True;
                   sd.opMode := TRACK;
                end if;
                if (minOutOfBoundsCount >= OOB_TO_PROBE) then
+                  --MicroBit.Music.Play(27,600);
+                  --soundOn := True;
                   sd.opMode := PROBE;
                end if;
          end case;
@@ -207,7 +220,7 @@ package body brain is
             nextDirSwitch := Clock + PROBE_DEBOUNCE;
             soundTime     := Clock + SWITCH_DIRECTION_BEEP_DURATION;
             
-            MicroBit.Music.Play (27, MicroBit.Music.Pitch(600));
+            --MicroBit.Music.Play (27, MicroBit.Music.Pitch(600));
             soundOn := True;
          elsif(abs(MicroBit.Accelerometer.Data.x) > ACCELEROMETER_SENSITIVITY and Clock > nextDirSwitch) then
             probeDir := (if probeDir = L298N_MDM.left then L298N_MDM.right else L298N_MDM.left);
@@ -217,11 +230,11 @@ package body brain is
             nextProbe     := Clock + PROBE_DIR_SWITCH_CYCLE;
             soundTime     := Clock + SWITCH_DIRECTION_BEEP_DURATION;
             
-            MicroBit.Music.Play (27, MicroBit.Music.Pitch(900));
+            --MicroBit.Music.Play (27, MicroBit.Music.Pitch(900));
             soundOn := True;
          end if;
          if(soundOn and clock > soundTime) then
-            MicroBit.Music.Play (27, rest);
+            --MicroBit.Music.Play (27, rest);
             soundOn := False;
          end if;
       end Probing;
