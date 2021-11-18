@@ -48,9 +48,9 @@ package brain is
    
    --------------Periods----------------
    
-   MOVE_PERIOD       : constant Time_Span := Milliseconds(4); --orginal 8
-   MEASURE_PERIOD    : constant Time_Span := Milliseconds(16); --orginal 16
-   CONTROLLER_PERIOD : constant Time_Span := Milliseconds(8); --orginal 8 but 4 works
+   MOVE_PERIOD       : constant Time_Span := Milliseconds(8); --orginal 8
+   MEASURE_PERIOD    : constant Time_Span := Milliseconds(32); --orginal 16
+   CONTROLLER_PERIOD : constant Time_Span := Milliseconds(32); --orginal 8 but 4 works
    
    -------------Controller settings-----
    
