@@ -25,7 +25,9 @@ package brain is
    
    --------------Speed configurations----
    TRACK_MODE_SPEED : constant L298N_MDM.speedControl := 900; --Default 700
+   TRACK_SCENT_SPEED : constant L298N_MDM.speedControl := 700;
    PROBE_MODE_SPEED : constant L298N_MDM.speedControl := 500; --Default 500
+   
    NO_SPEED         : constant L298N_MDM.speedControl := 0;
    
    
@@ -77,7 +79,7 @@ package brain is
    
    --------------------------------------
   
-   type OperationMode is (TRACK, PROBE);
+   type OperationMode is (TRACK, PROBE, TRACK_SCENT);
    
    
    type DistanceData is record

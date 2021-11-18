@@ -78,10 +78,12 @@ package body brain is
   
    -- calculate next move --
    task body Controller is --worst computation time: 0.000030518
+      type LastSpotted is (LEFT, RIGHT, BOTH);
+      
       sd : KeyInfo;
       periodStart   : Time := Clock; 
       periodLength  : constant Time_Span := CONTROLLER_PERIOD;
-
+      ls : LastSpotted;
 
       procedure DetermineMode is
          minOutOfBoundsCount : Natural;
@@ -93,12 +95,20 @@ package body brain is
             minOutOfBoundsCount := sd.distanceRight.outOfBoundsCount;
          end if;  
          
+         
          case sd.opMode is
             when PROBE =>
                if (minOutOfBoundsCount = 0) then
                   sd.opMode := TRACK;
                end if;
             when TRACK =>
+               if(minOutOfBoundsCount /= 0)then
+                  sd.opMode := TRACK_SCENT;
+               end if;
+            when TRACK_SCENT =>
+               if(minOutOfBoundsCount = 0) then
+                  sd.opMode := TRACK;
+               end if;
                if (minOutOfBoundsCount >= OOB_TO_PROBE) then
                   sd.opMode := PROBE;
                end if;
@@ -107,6 +117,16 @@ package body brain is
       
       procedure Calculate is
       begin
+         if(sd.distanceLeft.outOfBoundsCount = 0 and sd.distanceRight.outOfBoundsCount = 0)then
+            ls := BOTH;
+         elsif(sd.distanceLeft.outOfBoundsCount = 0) then
+            ls := LEFT;
+         elsif(sd.distanceRight.outOfBoundsCount = 0) then
+            ls := RIGHT;
+         end if;
+         
+         
+         
          if(sd.opMode = TRACK) then
             sd.distanceDif := abs(sd.distanceLeft.distance - sd.distanceRight.distance);  
             if sd.distanceDif < MIN_DIFF then
@@ -117,6 +137,14 @@ package body brain is
             else         
                sd.minDist := sd.distanceLeft.distance;               
                sd.nextDirection := L298N_MDM.right;  
+            end if;
+         elsif(sd.opMode = TRACK_SCENT) then
+            if(ls = RIGHT) then
+               sd.nextDirection := L298N_MDM.left;
+            elsif(ls = LEFT) then
+               sd.nextDirection := L298N_MDM.right;
+            else
+               sd.nextDirection := L298N_MDM.stop;
             end if;
          end if;
       end Calculate;
@@ -198,6 +226,15 @@ package body brain is
          end if;
       end Probing;
       
+      
+      procedure TrackScent is
+      begin
+         if(sd.nextDirection /= trackDir)then
+            trackDir := sd.nextDirection;
+            L298N_MDM.move(wheels, trackDir, L298N_MDM.speedControl(TRACK_SCENT_SPEED));
+         end if;
+      end TrackScent;
+      
    begin 
       
       wheels.IN_1 := MDM_IN1_PIN;  
@@ -222,6 +259,8 @@ package body brain is
                Probing;
             when TRACK =>
                Tracking;
+            when TRACK_SCENT =>
+               TrackScent;
          end case;
 
          delay until periodStart + periodLength;
