@@ -22,6 +22,7 @@ package body HCSR04 is
       begin
          if(nRF.Events.Triggered(evtType))then
             nRF.Events.Clear(evtType);
+            interruptedTime := Clock;
             released := True;
          end if;
 
@@ -30,12 +31,15 @@ package body HCSR04 is
 
       end EchoHandler;
 
-      procedure setEventType(et : nRF.Event_Type) is
+      procedure setEventType(et : in nRF.Event_Type) is
       begin
          evtType := et;
       end setEventType;
 
-
+      procedure FetchInterruptTimestamp(t : out Time)is
+      begin
+         t := interruptedTime;
+      end FetchInterruptTimestamp;
 
   end EchoHandlerInterface;
 
@@ -106,7 +110,7 @@ package body HCSR04 is
       --Wait signal is recieved back or module timeout
       EchoHandlerInterface.Wait;
 
-      endT := Clock;
+      EchoHandlerInterface.FetchInterruptTimestamp(endT);
       pulseTime := endT - startT;
       result := True;
    end pulseIn;

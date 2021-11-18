@@ -25,9 +25,22 @@ package body brain is
    end SharedData;
    
    
+   protected body MeasuredSignal is
+      entry WaitForNewMeasure when hasNewMeasure is
+      begin
+         hasNewMeasure := False;
+      end WaitForNewMeasure;
+      
+      procedure Signal is
+      begin
+         hasNewMeasure := True;
+      end Signal;
+   end MeasuredSignal;
+   
 
    -- look for target --
    task body Measure is  -- 0.007 worst?
+      
       ----- HCSR-04 SENSORS -------
       leftEye       : HCSR04.HCSR04;
       RightEye      : HCSR04.HCSR04;
@@ -36,6 +49,8 @@ package body brain is
       sd            : keyInfo;   
       periodStart   : Time := Clock; 
       periodLength  : constant Time_Span := MEASURE_PERIOD; 
+      
+      
       
       procedure measureDistance(eye : in HCSR04.HCSR04; sd : in out DistanceData) is
          result   : boolean := false;
@@ -70,6 +85,7 @@ package body brain is
          measureDistance(rightEye, sd.distanceRight);
          
          SharedData.SetMeasureData(sd);
+         MeasuredSignal.Signal;
                
          delay until periodStart + periodLength;
       end loop;
@@ -123,7 +139,8 @@ package body brain is
 
    begin
       loop  
-         periodStart := Clock;    
+         periodStart := Clock;
+         MeasuredSignal.WaitForNewMeasure;
          SharedData.GetSharedData(sd); -- fetch data --   
          
          DetermineMode;

@@ -5,6 +5,7 @@ with MicroBit;
 with MicroBit.IOsForTasking; use MicroBit.IOsForTasking;
 with MicroBit.Console;
 with nRF.GPIO.Tasks_And_Events;
+with Ada.Task_Identification;
 
 
 
@@ -48,7 +49,7 @@ package brain is
    
    --------------Periods----------------
    
-   MOVE_PERIOD       : constant Time_Span := Milliseconds(8); --orginal 8
+   MOVE_PERIOD       : constant Time_Span := Milliseconds(4); --orginal 8 --4 Works just fine
    MEASURE_PERIOD    : constant Time_Span := Milliseconds(32); --orginal 16
    CONTROLLER_PERIOD : constant Time_Span := Milliseconds(32); --orginal 8 but 4 works
    
@@ -110,6 +111,14 @@ package brain is
       data : keyInfo;
    end SharedData;
    
+   protected MeasuredSignal is
+      entry WaitForNewMeasure;
+      procedure Signal;
+   private
+        hasNewMeasure : Boolean;
+   end MeasuredSignal;
+   
+   
    -- QOL-eyes --
    type eye is (left, right);
    type dist is (lock_on, adjust, OOB);
@@ -122,7 +131,7 @@ package brain is
    --           Change probe direction based on time or acelerometer data
    --     Track:
    --           If new direction is applied, change to it
-   task Move with Priority => 1;
+   task Move with Priority => 3;
    
    
    
@@ -138,10 +147,11 @@ package brain is
    --                     Min distance
    --               Probe:
    --                     None
-   task Controller with Priority => 2;
+   task Controller with Priority => 1;
    
    
    --Task responibility
    --     Measure distance with both ultrasonics
-   task Measure with Priority => 3; 
+   task Measure with Priority => 2;
+   
 end brain;

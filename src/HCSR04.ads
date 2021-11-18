@@ -25,10 +25,12 @@ package HCSR04 is
       procedure EchoHandler with Attach_Handler => Ada.Interrupts.Names.GPIOTE_Interrupt;
       pragma Interrupt_Priority (253); --Priority 3
       procedure setEventType(et : in nRF.Event_Type);
+      procedure FetchInterruptTimestamp(t : out Time);
 
    private
       released : Boolean := False;
       evtType : nRF.Event_Type;
+      interruptedTime : Time;
    end EchoHandlerInterface;
 
 
