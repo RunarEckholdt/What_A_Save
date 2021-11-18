@@ -9,6 +9,7 @@ with nRF.GPIO.Tasks_And_Events;
 with Ada.Synchronous_Task_Control;
 with System;
 with timeout;
+with Timed_Conditions;  use Timed_Conditions;
 
 --https://create.arduino.cc/projecthub/abdularbi17/ultrasonic-sensor-hc-sr04-with-arduino-tutorial-327ff6
 
@@ -18,7 +19,6 @@ package HCSR04 is
 
    subtype Pin is MicroBit.IOsForTasking.Pin_Id
    		with Predicate => Supports(Pin, Analog);
-
    protected EchoHandlerInterface is
 
       entry Wait;
@@ -29,6 +29,7 @@ package HCSR04 is
       procedure setEventType(et : in nRF.Event_Type);
 
    private
+      Sendt : Timed_Condition;
       released : Boolean := False;
       evtType : nRF.Event_Type;
       Timeout_en : Boolean := False;

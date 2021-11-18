@@ -5,16 +5,8 @@ package body HCSR04 is
 
       entry Wait when released is
       begin
-         --WaitTime := Timeout;
          released := False;
-         --timeout := Ada.Real_Time.Time;
       end Wait;
-
-      --  procedure SetMaxTime(WaitTime: Ada.Real_Time.Time) is
-      --  begin
-      --     Timeout:= WaitTime;
-      --     Released := False;
-      --  end SetMaxTime;
 
 
 
@@ -79,32 +71,6 @@ package body HCSR04 is
       MicroBit.IOsForTasking.Set(hc.trig,False);
    end trig;
 
-   --time controll--------------------------
---     protected TimerControl is
---     entry Wait(WaitTime:  out Ada.Real_Time.Time);
---     procedure SetTime(WaitTime: Ada.Real_Time.Time);
---  private
---        Timeout:Ada.Real_Time.Time;
---        outOfBoundsPeriod:Ada.Real_Time.Time_Span:=Microseconds(40);
---        Release: Boolean := False;
---     end TimerControl;
-
---  protected body TimerControl is
---     entry Wait(WaitTime: out Ada.Real_Time.Time) when Release is
---        begin
---           --if(WaitTime - Ada.Real_Time.Time>outOfBoundsPeriod) then
---
---        WaitTime:= Timeout;
---        Release := False;
---          -- end if;
---        end Wait;
-   --
-   --  procedure SetTime(WaitTime: Ada.Real_Time.Time) is
-   --  begin
-   --     Timeout := WaitTime;
-   --     Release := True;
-   --     end SetTime;
-   --  end TimerControl;
 
 
    --Measures the time lenght of a high pulse
@@ -122,19 +88,13 @@ package body HCSR04 is
       while(MicroBit.IOsForTasking.Set(hc.echo) = False) loop
          null;
       end loop;
-
-
       startT := Clock;
       timeout.TimerControl.SetTime(startT);
       EchoHandlerInterface.Wait;
-      --TimerControl.SetTime(WaitTime => outOfBoundsPeriod );
       if(startT - Clock >= outOfBoundsPeriod) then
       timeout.PO.UsedToReleaseCall;
       end if;
-      --timeout.TimerControl.Wait(WaitTime => startT);
-      --timeout.PO.Call(test_var);
-      --Wait signal is recieved back or module timeout
-      --EchoHandlerInterface.timeout;
+
 
       endT := Clock;
       pulseTime := endT - startT;
