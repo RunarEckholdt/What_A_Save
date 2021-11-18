@@ -25,6 +25,20 @@ package body brain is
    end SharedData;
    
    
+   protected body MeasuredSignal is
+      entry WaitForNewData when newData is
+      begin
+         newData := False;
+      end WaitForNewData;
+      
+      procedure Signal is
+      begin
+         newData := True;
+      end Signal;
+      
+   end MeasuredSignal;
+   
+   
 
    -- look for target --
    task body Measure is  -- 0.007 worst?
@@ -70,6 +84,7 @@ package body brain is
          measureDistance(rightEye, sd.distanceRight);
          
          SharedData.SetMeasureData(sd);
+         MeasuredSignal.Signal;
                
          delay until periodStart + periodLength;
       end loop;
@@ -124,6 +139,7 @@ package body brain is
    begin
       loop  
          periodStart := Clock;    
+         MeasuredSignal.WaitForNewData;
          SharedData.GetSharedData(sd); -- fetch data --   
          
          DetermineMode;

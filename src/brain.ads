@@ -48,7 +48,7 @@ package brain is
    
    --------------Periods----------------
    
-   MOVE_PERIOD       : constant Time_Span := Milliseconds(8); --orginal 8
+   MOVE_PERIOD       : constant Time_Span := Milliseconds(4); --orginal 8
    MEASURE_PERIOD    : constant Time_Span := Milliseconds(32); --orginal 16
    CONTROLLER_PERIOD : constant Time_Span := Milliseconds(32); --orginal 8 but 4 works
    
@@ -71,7 +71,7 @@ package brain is
    
    -------------Other constants-----------
    OUT_OF_BOUNDS     : constant Float := 100.0;
-   MAX_VIEW_DISTANCE : constant Float := 40.0;
+   MAX_VIEW_DISTANCE : constant Float := 55.0;
    SWITCH_DIRECTION_BEEP_DURATION : constant Time_Span := Milliseconds(75);
    
    
@@ -109,6 +109,14 @@ package brain is
    private
       data : keyInfo;
    end SharedData;
+   
+   protected MeasuredSignal is
+      entry WaitForNewData;
+      procedure Signal;
+   private
+      newData : Boolean;
+   end MeasuredSignal;
+   
    
    -- QOL-eyes --
    type eye is (left, right);
